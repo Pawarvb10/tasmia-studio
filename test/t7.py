@@ -1,0 +1,63 @@
+import asyncio, json, base64, os
+from playwright.async_api import async_playwright
+F='file://'+__import__('os').path.abspath(__import__('os').path.join(__import__('os').path.dirname(__file__),'..','index.html'))+''; S=__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)),'out','')
+__import__('os').makedirs(S,exist_ok=True)
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+    ctx=await b.new_context(viewport={'width':1440,'height':1000}); pg=await ctx.new_page(); errs=[]
+    pg.on('pageerror',lambda e:errs.append('PAGEERR '+str(e)))
+    pg.on('console',lambda m:errs.append('CONSOLE '+m.text) if m.type=='error' else None)
+    await pg.goto(F); await pg.wait_for_timeout(600)
+    await pg.click('text=Load demo studio'); await pg.wait_for_timeout(500)
+    await pg.click('.utile >> nth=0'); await pg.fill('#pin','1111'); await pg.click('text=Sign in'); await pg.wait_for_timeout(1000)
+    await pg.evaluate("window.__pdfs=[]; openPDF=async(doc,name)=>{doc.footer('x'); const bl=doc.build(); const buf=new Uint8Array(await bl.arrayBuffer()); let s=''; for(const c of buf) s+=String.fromCharCode(c); window.__pdfs.push([name,btoa(s)]);}; void 0")
+    # tracker
+    await pg.goto(F+'#tracker'); await pg.wait_for_timeout(700)
+    print('tracker', await pg.evaluate("trackList().L.map(x=>[x.o.no,x.commit,x.job,x.units,x.stage])"))
+    await pg.screenshot(path=S+'tr_list.png',full_page=True)
+    await pg.click('#tr-o_1002 .trsum'); await pg.wait_for_timeout(500); await pg.screenshot(path=S+'tr_open.png',full_page=True)
+    await pg.click('#tr-o_1004 .trsum'); await pg.wait_for_timeout(300); print('open count', await pg.evaluate("document.querySelectorAll('.tritem.open').length"), await pg.evaluate("UI.trSel"))
+    await pg.fill('#trq','11223'); await pg.wait_for_timeout(600); print('search phone', await pg.evaluate("trackList().L.map(x=>x.o.no)"))
+    await pg.fill('#trq',''); await pg.wait_for_timeout(500)
+    await pg.click('.tabs button:has-text("Ready to deliver")'); await pg.wait_for_timeout(300); print('ready', await pg.evaluate("trackList().L.map(x=>x.o.no+':'+x.stage)"))
+    await pg.click('.tabs button:has-text("All")'); await pg.wait_for_timeout(300)
+    await pg.evaluate("trackerPDF()"); await pg.wait_for_timeout(800)
+    # sketch in new order
+    await pg.evaluate("newOrder('c_priya')"); await pg.wait_for_timeout(600)
+    await pg.click('text=✏ Draw design sketch'); await pg.wait_for_timeout(800)
+    box=await pg.locator('#skInk').bounding_box()
+    async def stroke(pts):
+      await pg.mouse.move(box['x']+pts[0][0],box['y']+pts[0][1]); await pg.mouse.down()
+      for x,y in pts[1:]: await pg.mouse.move(box['x']+x,box['y']+y,steps=6)
+      await pg.mouse.up()
+    await stroke([(180,190),(200,260),(250,300),(300,260),(320,190)])
+    await pg.click('.skc >> nth=2'); await pg.click('button[data-sz] >> nth=2')
+    await stroke([(560,180),(600,300),(640,180)])
+    await pg.fill('#skTxt','Deep U + latkans'); await pg.click('[data-tl="text"]'); await pg.mouse.click(box['x']+520,box['y']+90)
+    await pg.click('[data-tl="pen"]')
+    await pg.fill('#skCap','Riya – zardosi front, deep back')
+    await pg.screenshot(path=S+'sk_pad.png')
+    await pg.click('#skSave'); await pg.wait_for_timeout(800)
+    print('draft files', await pg.evaluate("EDIT.garments[0].files.map(f=>[f.kind,f.caption,f.id.slice(0,4)])"))
+    await pg.fill('[data-p="garments.0.style"]','Zardosi front, deep U back')
+    await pg.click('#saveOrderBtn'); await pg.wait_for_timeout(1200); await pg.evaluate('closeModal()')
+    gid=await pg.evaluate("garmentsOf(coll('orders').slice(-1)[0].id)[0].id")
+    print('saved files', await pg.evaluate(f"gar('{gid}').design.versions.map(v=>v.files.map(f=>f.kind+':'+f.caption))"))
+    await pg.goto(F+'#garment-'+gid); await pg.wait_for_timeout(500); await pg.click('.tabs button:has-text("Design")'); await pg.wait_for_timeout(500)
+    await pg.screenshot(path=S+'sk_garment.png')
+    # sketch over existing on garment (approved? no) -> adds to latest version
+    await pg.click('main button:has-text("✏ Draw sketch")'); await pg.wait_for_timeout(600)
+    box=await pg.locator('#skInk').bounding_box(); await stroke([(100,100),(300,300)]); await pg.click('#skSave'); await pg.wait_for_timeout(600)
+    print('after 2nd', await pg.evaluate(f"gar('{gid}').design.versions.map(v=>v.files.length)"))
+    # orders list sorted
+    print('orders sort', await pg.evaluate("coll('orders').map(o=>[o.no,orderTrack(o).commit,orderTrack(o).open]).sort((a,b)=>((a[2]?'0':'1')+a[1]).localeCompare((b[2]?'0':'1')+b[1])).map(x=>x[0]).join(',')"))
+    for n,b64 in await pg.evaluate("window.__pdfs"): open(S+'pdf7_'+n,'wb').write(base64.b64decode(b64)); print('PDF',n)
+    # mobile
+    m=await b.new_context(viewport={'width':390,'height':844}); mp=await m.new_page(); mp.on('pageerror',lambda e:errs.append('M '+str(e)))
+    await mp.goto(F); await mp.wait_for_timeout(500); await mp.click('text=Load demo studio'); await mp.wait_for_timeout(400)
+    await mp.click('.utile >> nth=0'); await mp.fill('#pin','1111'); await mp.click('text=Sign in'); await mp.wait_for_timeout(800)
+    await mp.goto(F+'#tracker'); await mp.wait_for_timeout(600); print('m sw', await mp.evaluate("document.documentElement.scrollWidth")); await mp.click('#tr-o_1002 .trsum'); await mp.wait_for_timeout(400); print('m sw2', await mp.evaluate("document.documentElement.scrollWidth")); await mp.screenshot(path=S+'m_tracker.png',full_page=True)
+    await mp.evaluate("newOrder('c_priya')"); await mp.wait_for_timeout(500); await mp.evaluate("sketchDraft(0)"); await mp.wait_for_timeout(700); await mp.screenshot(path=S+'m_sketch.png')
+    print('ERRS',errs)
+asyncio.run(main())

@@ -298,6 +298,48 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .ifoot{border-top:2px solid var(--line);margin-top:14px;padding-top:10px}
 .ithanks{font-weight:700;font-size:14px;color:var(--accent);margin-bottom:4px}
 
+/* sketch pad */
+.sktools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.skgrp{display:inline-flex;gap:4px;align-items:center;padding-left:8px;border-left:1px solid var(--line)}
+.skgrp button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.skc{width:24px;height:24px;min-height:0;border-radius:50%;padding:0;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.skc.on{box-shadow:0 0 0 2px var(--accent)}
+.skwrap{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;max-height:70vh;overflow-y:auto}
+.skwrap canvas{display:block;width:100%}
+.skwrap #skInk{position:absolute;left:0;top:0;height:auto;touch-action:none;cursor:crosshair}
+.thumb .tedit{position:absolute;left:4px;top:4px;border-radius:50%;width:24px;height:24px;min-height:0;padding:0;font-size:12px;background:#fff}
+
+/* delivery tracker */
+.trlegend{background:#e3f5b5;padding:1px 6px;border-radius:4px;color:#3d5200}
+.tcount{display:inline-block;min-width:18px;padding:0 5px;border-radius:9px;background:rgba(0,0,0,.07);font-size:11px;margin-left:3px}
+.okc{color:var(--ok)}
+.trlist{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.trhead,.trsum{display:grid;grid-template-columns:110px 120px minmax(150px,1.2fr) minmax(160px,2fr) 70px 140px 28px;gap:12px;align-items:center;padding:9px 14px}
+.trhead{font-size:11.5px;font-weight:600;color:var(--muted);background:#faf6f1;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.03em}
+.tritem{border-bottom:1px solid var(--line)}
+.tritem:last-child{border-bottom:0}
+.trsum{cursor:pointer;font-size:13.5px}
+.trsum:hover{background:#fbf8f5}
+.trsum small{display:block;font-size:11.5px}
+.trsum .trj{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trchev{color:var(--muted);text-align:center}
+.tritem.trready .trsum{background:#eef9cf}
+.tritem.trready .trsum:hover{background:#e6f5bd}
+.tritem.trpart .trsum{background:#f6fbe6}
+.tritem.late .trsum{box-shadow:inset 3px 0 0 var(--bad)}
+.tritem.open{box-shadow:inset 3px 0 0 var(--accent)}
+.tritem.open .trsum{border-bottom:1px dashed var(--line)}
+.trbody{padding:10px 14px 14px;background:#fdfbf9}
+.trmeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.trmeta a.btn{text-decoration:none}
+.trarts{width:100%;margin-top:10px;font-size:12.5px}
+.trarts td{vertical-align:top}
+.trjd{max-width:340px}
+.trimg{width:40px;height:40px;border-radius:6px;background:#f1ebe5 center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+@media (max-width:900px){.trhead{display:none}.trsum{grid-template-columns:72px 1fr auto 18px;grid-template-areas:"d o s c" "d n u c" "d j j c";row-gap:2px;column-gap:10px}
+  .trsum .trd{grid-area:d}.trsum .tro{grid-area:o}.trsum .trc{grid-area:n;min-width:0}.trsum .trj{grid-area:j;white-space:normal;font-size:12.5px;color:var(--muted)}.trsum .tru{grid-area:u;text-align:right}.trsum .trs{grid-area:s;text-align:right}.trsum .trchev{grid-area:c}
+  .trarts thead{display:none}.trarts tr{display:block;position:relative;padding:8px 0 8px 52px;border-bottom:1px solid var(--line)}.trarts td{display:block;border:0;padding:0}.trarts td:nth-child(1){position:absolute;left:0;top:8px}.trarts td.n{text-align:left}.trarts td:nth-child(4)::before{content:'Qty ';color:var(--muted)}.trarts td:nth-child(n+6){display:inline-block;margin:4px 6px 0 0;font-size:12px}.trjd{max-width:none}}
+
 </style>
 <script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;const t=c.closest('table');const hr=t&&t.tHead&&t.tHead.rows[0];c.dataset.l=hr&&hr.cells[i]?hr.cells[i].textContent:''}}).observe(document,{childList:true,subtree:true})</script>
 </head>
@@ -1150,39 +1192,39 @@ function defaultStages(){
 }
 function defaultTemplates(){
   return [
-    {id: 't_blouse', name: 'Blouse', category: 'Women', charts: ['blouse'], fields: chartFields(['blouse']),
+    {id: 't_blouse', code: 'BL', name: 'Blouse', category: 'Women', charts: ['blouse'], fields: chartFields(['blouse']),
       specs: SP([['Front neck', 'Round|U|V|Sweetheart|Square|Boat|High neck|Collar'], ['Back neck', 'Deep U|Deep V|Round|Square|Keyhole|Dori back|Boat'], ['Sleeve style', 'Sleeveless|Cap|Short|Elbow|3/4|Full|Puff|Bell'], ['Opening', 'Front hooks|Back hooks|Side zip|Back zip'], ['Padding', 'Padded|Non-padded|Cups only'], ['Lining', 'Full|Half|None'], ['Dori / latkan', 'Yes|No']]),
       components: C([['Blouse fabric', 'fabric', 'm', 1, 650], ['Cotton lining', 'lining', 'm', 1, 120], ['Blouse cups', 'padding', 'pair', 1, 90], ['Hooks', 'accessories', 'set', 1, 30], ['Latkans', 'hangings', 'pair', 1, 120], ['Thread', 'thread', 'spool', 1, 40]]),
       workflow: [W('cut', 'Whole blouse', 1, {units: 1, rate: 200, hours: 1}), W('emb', 'Neck & sleeve embroidery', 2, {pricing: 'hour', rate: 180, cplx: 'Medium', hours: 6}), W('stitch', 'Blouse assembly', 3, {rate: 650, hours: 4}), W('finish', 'Hooks, dori & latkans', 4, {rate: 150, hours: 1}), W('trial', 'Fitting trial', 5, {hours: 0.5, optional: true}), W('qc', 'Final QC', 6, {hours: 0.5})]},
-    {id: 't_top', name: 'Top / Kurti', category: 'Women', charts: ['top'], fields: chartFields(['top']),
+    {id: 't_top', code: 'Top', name: 'Top / Kurti', category: 'Women', charts: ['top'], fields: chartFields(['top']),
       specs: SP([['Style', 'Straight|A-line|Anarkali|Peplum|Crop|Tunic|Kaftan|One piece'], ['Length', "Jean's top|Short top|Knee|Salwar's top|Pant's top|Calf|Long top|One piece"], ['Neck', 'Round|U|V|Boat|Collar|Mandarin|Sweetheart|Square'], ['Sleeve style', 'Sleeveless|Short|Elbow|3/4|Full|Bell|Puff'], ['Slit', 'Side|Front|None'], ['Lining', 'Full|Half|None']]),
       components: C([['Top fabric', 'fabric', 'm', 2.5, 450], ['Lining', 'lining', 'm', 1.5, 120], ['Buttons / hooks', 'accessories', 'set', 1, 40], ['Thread', 'thread', 'spool', 1, 40]]),
       workflow: [W('cut', 'Top', 1, {rate: 200, hours: 1}), W('emb', 'Neckline / yoke embroidery', 2, {pricing: 'hour', rate: 180, cplx: 'Simple', hours: 3, optional: true}), W('stitch', 'Top', 3, {rate: 500, hours: 3}), W('finish', 'Finishing', 4, {rate: 80, hours: 0.75}), W('trial', 'Fitting trial', 5, {hours: 0.5, optional: true}), W('qc', 'Final QC', 6, {hours: 0.5})]},
-    {id: 't_bottom', name: 'Bottom wear (salwar, palazzo, pant, skirt…)', category: 'Women', charts: ['bottom'], fields: chartFields(['bottom']),
+    {id: 't_bottom', code: 'Bottom', name: 'Bottom wear (salwar, palazzo, pant, skirt…)', category: 'Women', charts: ['bottom'], fields: chartFields(['bottom']),
       specs: SP([['Style', 'Salwar|Churidar|Palazzo|Straight pant|Capri|Pyjama|Long skirt|Short skirt|Garara|Lehenga skirt|Petticoat|Dhoti'], ['Waist', 'Elastic|Drawstring|Zip & hook|Elastic + drawstring'], ['Pockets', 'Yes|No'], ['Bottom finish', 'Plain|Lace|Piping|Embroidered border']]),
       components: C([['Bottom fabric', 'fabric', 'm', 2.5, 300], ['Elastic / drawstring', 'accessories', 'set', 1, 30], ['Thread', 'thread', 'spool', 1, 40]]),
       workflow: [W('cut', 'Bottom', 1, {rate: 120, hours: 0.75}), W('stitch', 'Bottom', 2, {rate: 300, hours: 2}), W('finish', 'Waist & hem finishing', 3, {rate: 60, hours: 0.5}), W('qc', 'Final QC', 4, {hours: 0.25})]},
-    {id: 't_suit_w', name: 'Salwar Suit / Kurta Set (top + bottom)', category: 'Women', charts: ['top', 'bottom'], fields: chartFields(['top', 'bottom']),
+    {id: 't_suit_w', code: 'Suit', name: 'Salwar Suit / Kurta Set (top + bottom)', category: 'Women', charts: ['top', 'bottom'], fields: chartFields(['top', 'bottom']),
       specs: SP([['Kurta style', 'Straight|A-line|Anarkali|Kaftan|Angrakha'], ['Neck', 'Round|V|Boat|Collar|Mandarin|Sweetheart'], ['Sleeve style', 'Sleeveless|Short|Elbow|3/4|Full|Bell'], ['Bottom style', 'Salwar|Churidar|Palazzo|Straight pants|Dhoti'], ['Slit', 'Side|Front|None'], ['Dupatta finishing', 'Lace|Tassels|Fall & pico|None']]),
       components: C([['Kurta fabric', 'fabric', 'm', 2.75, 450], ['Bottom fabric', 'fabric', 'm', 2.5, 250], ['Lining', 'lining', 'm', 2, 120], ['Gota lace', 'accessories', 'm', 4, 45], ['Buttons / hooks', 'accessories', 'set', 1, 40], ['Thread', 'thread', 'spool', 2, 40]]),
       workflow: [W('dye', 'Dupatta dyeing', 1, {optional: true, out: true, tat: 3, charge: 350}), W('cut', 'Kurta & bottom', 2, {rate: 250, hours: 1.5}), W('emb', 'Neckline embroidery', 3, {pricing: 'hour', rate: 180, cplx: 'Simple', hours: 4}), W('stitch', 'Kurta', 4, {rate: 550, hours: 3.5}), W('stitch', 'Bottom', 4, {rate: 250, hours: 1.5}), W('hem', 'Dupatta pico & finishing', 5, {optional: true, out: true, tat: 2, charge: 120}), W('finish', 'Finishing', 6, {rate: 100, hours: 1}), W('trial', 'Fitting trial', 7, {hours: 0.5, optional: true}), W('qc', 'Final QC', 8, {hours: 0.5})]},
-    {id: 't_lehenga', name: 'Bridal Lehenga Choli (blouse + lehenga)', category: 'Women', charts: ['blouse', 'bottom'], fields: chartFields(['blouse', 'bottom']),
+    {id: 't_lehenga', code: 'Lehenga', name: 'Bridal Lehenga Choli (blouse + lehenga)', category: 'Women', charts: ['blouse', 'bottom'], fields: chartFields(['blouse', 'bottom']),
       specs: SP([['Kalis / panels', '8|12|16|24|Circular'], ['Can-can layers', 'None|1|2|3'], ['Waist closure', 'Side zip|Drawstring + hooks|Back zip'], ['Choli back', 'Deep U|Dori back|Keyhole|Closed'], ['Dupatta border', 'Scalloped|Gota|Zari lace|Tassels'], ['Lining colour', '']]),
       components: C([['Lehenga fabric (raw silk)', 'fabric', 'm', 6, 900], ['Choli fabric', 'fabric', 'm', 1, 700], ['Dupatta net', 'fabric', 'm', 2.5, 400], ['Lining', 'lining', 'm', 4, 140], ['Can-can', 'padding', 'm', 3, 150], ['Blouse cups', 'padding', 'pair', 1, 90], ['Zari thread', 'emb_material', 'spool', 6, 180], ['Dabka & nakshi', 'emb_material', 'pack', 2, 260], ['Latkans', 'hangings', 'pair', 2, 120], ['Invisible zip', 'accessories', 'pc', 1, 40], ['Hooks', 'accessories', 'set', 1, 30]]),
       workflow: [W('dye', 'Fabric dyeing (shade match)', 1, {out: true, tat: 3, charge: 900}), W('cut', 'Lehenga, choli & dupatta', 2, {rate: 600, hours: 3}), W('emb', 'Section: lehenga ghera', 3, {pricing: 'hour', rate: 200, cplx: 'Heavy', hours: 24}), W('emb', 'Section: choli front & sleeves', 3, {pricing: 'hour', rate: 180, cplx: 'Medium', hours: 8}), W('emb', 'Section: dupatta border', 3, {pricing: 'hour', rate: 180, cplx: 'Medium', hours: 6}), W('hand', 'Latkans & tassels', 4, {rate: 400, hours: 3, optional: true}), W('stitch', 'Lehenga panels & can-can', 5, {rate: 1500, hours: 8}), W('stitch', 'Choli', 5, {rate: 700, hours: 4}), W('hem', 'Dupatta edge finishing', 6, {out: true, tat: 2, charge: 250, optional: true}), W('finish', 'Finishing', 7, {rate: 300, hours: 2}), W('trial', 'Bridal trial', 8, {hours: 1}), W('qc', 'Final QC', 9, {hours: 1})]},
-    {id: 't_kurta_m', name: 'Kurta (Men)', category: 'Men', charts: ['mens'], fields: chartFields(['mens']),
+    {id: 't_kurta_m', code: 'Kurta', name: 'Kurta (Men)', category: 'Men', charts: ['mens'], fields: chartFields(['mens']),
       specs: SP([['Collar', 'Mandarin|Band|Classic|Round'], ['Placket', 'Hidden|Button|Contrast'], ['Fit', 'Slim|Regular|Relaxed'], ['Side pockets', 'Yes|No']]),
       components: C([['Kurta fabric', 'fabric', 'm', 2.75, 450], ['Buttons', 'accessories', 'pc', 6, 12], ['Thread', 'thread', 'spool', 1, 40]]),
       workflow: [W('cut', 'Kurta', 1, {rate: 200, hours: 1}), W('emb', 'Neckline thread work', 2, {pricing: 'hour', rate: 180, hours: 3, optional: true}), W('stitch', 'Kurta', 3, {rate: 550, hours: 3.5}), W('finish', 'Buttons & kaaj', 4, {rate: 80, hours: 0.75}), W('qc', 'Final QC', 5, {hours: 0.5})]},
-    {id: 't_trouser', name: 'Trouser (Men)', category: 'Men', charts: ['mens'], fields: chartFields(['mens']),
+    {id: 't_trouser', code: 'Trouser', name: 'Trouser (Men)', category: 'Men', charts: ['mens'], fields: chartFields(['mens']),
       specs: SP([['Fit', 'Slim|Regular|Relaxed'], ['Pleats', 'Flat front|Single|Double'], ['Pockets', 'Side + back|Side only|Cargo'], ['Belt loops', 'Yes|No|Side adjusters'], ['Bottom finish', 'Plain|Turn-up|Chinese']]),
       components: C([['Trouser fabric', 'fabric', 'm', 1.3, 600], ['Pocketing', 'lining', 'm', 0.3, 80], ['Zip', 'accessories', 'pc', 1, 35], ['Waistband curtain', 'accessories', 'pc', 1, 60], ['Thread', 'thread', 'spool', 1, 40]]),
       workflow: [W('cut', 'Trouser', 1, {rate: 150, hours: 1}), W('stitch', 'Trouser', 2, {rate: 450, hours: 3}), W('finish', 'Hem & buttons', 3, {rate: 60, hours: 0.5}), W('qc', 'Final QC', 4, {hours: 0.25})]},
-    {id: 't_suit_m', name: "Men's Suit / Sherwani", category: 'Men', charts: ['mens'], fields: chartFields(['mens']),
+    {id: 't_suit_m', code: 'M-Suit', name: "Men's Suit / Sherwani", category: 'Men', charts: ['mens'], fields: chartFields(['mens']),
       specs: SP([['Lapel', 'Notch|Peak|Shawl'], ['Buttons', '1|2|3|Double-breasted'], ['Vents', 'None|Single|Double'], ['Shoulder', 'Natural|Structured|Roped'], ['Lining colour', ''], ['Trouser front', 'Flat|Single pleat|Double pleat']]),
       components: C([['Suiting fabric', 'fabric', 'm', 3.5, 1200], ['Lining', 'lining', 'm', 2, 220], ['Canvas & fusing', 'padding', 'm', 0.8, 300], ['Shoulder pads', 'padding', 'pair', 1, 150], ['Buttons (horn)', 'accessories', 'pc', 8, 25], ['Trouser zip', 'accessories', 'pc', 1, 35], ['Thread', 'thread', 'spool', 3, 40]]),
       workflow: [W('cut', 'Jacket & trouser', 1, {rate: 450, hours: 2.5}), W('stitch', 'Jacket construction', 2, {rate: 1800, hours: 12}), W('stitch', 'Trouser', 2, {rate: 650, hours: 4}), W('trial', 'Basted trial', 3, {hours: 0.5}), W('finish', 'Buttons, kaaj & hand finishing', 4, {rate: 300, hours: 2}), W('qc', 'Final QC', 5, {hours: 0.5})]},
-    {id: 't_saree', name: 'Saree finishing', category: 'Women',
+    {id: 't_saree', code: 'S F&P', name: 'Saree finishing', category: 'Women',
       fields: F('Saree', 'Length,Fall length'),
       specs: SP([['Finishing', 'Fall & pico|Pico only|Tassels on pallu|Pre-pleating'], ['Pallu tassels', 'Yes|No']]),
       components: C([['Saree fall', 'accessories', 'pc', 1, 60], ['Tassels', 'tassels', 'set', 1, 150, 'studio']]),
@@ -1810,7 +1852,7 @@ function finance(from, to){
    ===================================================================== */
 const NAV = [
   ['Workspace', [['dashboard', 'Dashboard', 'dash'], ['mytasks', 'My tasks', 'mytasks'], ['alerts', 'Alerts', 'alerts']]],
-  ['Orders', [['orders', 'Orders & garments', 'orders'], ['customers', 'Customers & measurements', 'customers']]],
+  ['Orders', [['tracker', 'Delivery tracker', 'orders'], ['orders', 'Orders & garments', 'orders'], ['customers', 'Customers & measurements', 'customers']]],
   ['Production', [['board', 'Production board', 'orders'], ['planner', 'Stitching & delivery planner', 'planner'], ['embroidery', 'Embroidery & handwork', 'embroidery'], ['trials', 'Trials & alterations', 'trials'], ['qc', 'QC & delivery', 'qc']]],
   ['Resources', [['workers', 'Workers & workload', 'workers'], ['vendors', 'Outside vendors', 'vendors'], ['inventory', 'Materials & stock', 'inventory']]],
   ['Money', [['billing', 'Billing & payments', 'billing'], ['reports', 'Owner reports', 'reports']]],
@@ -1881,6 +1923,7 @@ function migrate(){
   if(!coll('templates').length) DB.templates = defaultTemplates();
   if(!coll('msgTemplates').length) DB.msgTemplates = defaultMsgTemplates();
   migrateMeasure(); migrateHeads();
+  const dt = defaultTemplates(); coll('templates').forEach(t => { if(!t.code) t.code = dt.find(x => x.id === t.id)?.code || (t.name || '').split(/[ (/]/)[0].slice(0, 8); });
 }
 /* invoice charge heads aligned to the studio's own invoice columns */
 function migrateHeads(){
@@ -2173,8 +2216,8 @@ VIEWS.orders = {perm: 'orders', title: 'Orders', fn: () => {
   }
   const L = coll('orders').filter(o => { const c = cust(o.customerId), [st] = orderState(o); if(q && !`${o.no} ${c?.name} ${c?.phone}`.toLowerCase().includes(q)) return false;
     if(f === 'open') return o.status !== 'cancelled' && st !== 'Delivered'; if(f === 'urgent') return o.urgent || activeG(o).some(g => g.urgent); if(f === 'late') return activeG(o).some(g => gLive(g) && ((g.deliveryDate && g.deliveryDate < today) || sc.G[g.id]?.late)); if(f === 'ready') return st.includes('eady'); if(f === 'delivered') return st === 'Delivered'; return true; })
-    .sort(by(o => o.created, -1));
-  return head + `<div class="card">${L.length ? `<table class="stack"><thead><tr><th>Order</th><th>Customer</th><th>Garments</th><th>Booked</th><th>Next delivery</th>${can('prices') ? '<th class="n">Total</th><th class="n">Balance</th>' : ''}<th>Status</th></tr></thead><tbody>${L.map(o => { const gs = activeG(o), T = orderTotals(o), [sl, sc2] = orderState(o), nx = gs.filter(gLive).map(g => g.deliveryDate).sort()[0];
+    .sort(by(o => { const x = orderTrack(o); return (x.open ? '0' : '1') + (x.commit || '9999'); }));
+  return head + `<div class="card">${L.length ? `<table class="stack"><thead><tr><th>Order</th><th>Customer</th><th>Garments</th><th>Booked</th><th>Committed delivery ↑</th>${can('prices') ? '<th class="n">Total</th><th class="n">Balance</th>' : ''}<th>Status</th></tr></thead><tbody>${L.map(o => { const gs = activeG(o), T = orderTotals(o), [sl, sc2] = orderState(o), nx = gs.filter(gLive).map(g => g.deliveryDate).sort()[0];
     return `<tr class="click" onclick="go('order-${o.id}')"><td><b>${h(o.no)}</b> ${o.urgent ? '<span class="chip urgent">URGENT</span>' : ''}</td><td>${h(cust(o.customerId)?.name)}</td><td>${gs.map(g => `${h(g.title)} ${gChip(g)}`).join('<br>')}</td><td>${fmtD(o.created)}</td><td>${nx ? dateChip(nx) : '—'}</td>${can('prices') ? `<td class="n">${inr(T.total)}</td><td class="n">${T.bal > 0.5 ? inr(T.bal) : '<span class="chip c-ok">Paid</span>'}</td>` : ''}<td><span class="chip ${sc2}">${sl}</span></td></tr>`; }).join('')}</tbody></table>` : '<div class="empty">No orders match.</div>'}</div>`;
 }};
 
@@ -2269,10 +2312,10 @@ function draftBlock(d, i, c){
         <label style="margin-top:8px">Fitting preferences for this article</label><textarea rows="2" data-p="${P}.fit">${h(d.fit)}</textarea>
         <label style="margin-top:8px">Special instructions</label><input data-p="${P}.instructions" value="${v(d.instructions)}" placeholder="Shown highlighted on job card">
       </div>
-      <div><h3>Design file</h3>
+      <div><h3>Design — sketch, cloth photos & references</h3>
         <div class="row ac">${dz ? `<div class="dimg" style="width:70px;height:54px;aspect-ratio:auto;border-radius:8px;flex-shrink:0" data-media="${h(dzCover(dz))}">✦</div><div><b>${h(dz.name)}</b> <span class="muted">${h(dz.code)} · ${h(dz.style || '')}</span></div>` : '<span class="muted">No catalogue design</span>'}<span class="sp"></span><button class="sm" onclick="pickDesignDraft(${i})">${dz ? 'Change' : 'Choose from catalogue'}</button>${dz ? `<button class="sm ghost danger" onclick="EDIT.garments[${i}].designId='';softRender()">✕</button>` : ''}</div>
-        <div class="row ac" style="margin-top:8px"><label class="btn sm" style="margin:0;color:var(--ink)">⬆ Add fabric photo / sketch / reference<input type="file" accept="image/*" multiple style="display:none" onchange="draftFiles(${i},this)"></label><span class="muted" style="font-size:12px">${d.files.length} file${d.files.length === 1 ? '' : 's'}</span></div>
-        ${d.files.length ? `<div class="thumbs" style="margin-top:6px">${d.files.map((f, k) => `<div class="thumb" data-media="${h(f.id)}"><span class="cap">${h(f.kind)}</span><button class="tbtn" onclick="EDIT.garments[${i}].files.splice(${k},1);softRender()">✕</button></div>`).join('')}</div>` : ''}
+        <div class="row ac" style="margin-top:8px"><button class="sm pri" onclick="sketchDraft(${i})">✏ Draw design sketch</button><select id="dk_${i}" style="width:auto">${FILE_KINDS.filter(([k]) => k !== 'photo').map(([k, l]) => opt(k, l, d.files.length ? 'reference' : 'fabric')).join('')}</select><label class="btn sm" style="margin:0;color:var(--ink)">⬆ Upload photo<input type="file" accept="image/*" multiple style="display:none" onchange="draftFiles(${i},this)"></label><span class="muted" style="font-size:12px">${d.files.length} file${d.files.length === 1 ? '' : 's'}</span></div>
+        ${d.files.length ? `<div class="thumbs" style="margin-top:6px">${d.files.map((f, k) => `<div class="thumb" data-media="${h(f.id)}" title="${h(f.caption || '')}"><span class="cap">${h(kindName(f.kind))}</span><button class="tedit" title="Draw over this image" onclick="sketchDraft(${i},'${h(f.id)}')">✏</button><button class="tbtn" onclick="EDIT.garments[${i}].files.splice(${k},1);softRender()">✕</button></div>`).join('')}</div>` : '<div class="hint">Sketch the design on a front/back stencil, or upload the designer\'s paper sketch, cloth and reference photos. They stay with this article everywhere.</div>'}
         <label class="inline" style="margin-top:8px"><input type="checkbox" data-p="${P}.designApproved" ${d.designApproved ? 'checked' : ''}> Customer has approved this design</label>
       </div>
     </div>
@@ -2287,8 +2330,8 @@ const dzCover = d => d.cover || d.samples[0] || d.sketches?.[0] || d.renders[0] 
 async function draftFiles(i, inp){
   const kinds = ['fabric', 'sketch', 'embroidery', 'reference'];
   const ids = await uploadImages(inp.files, 1400); inp.value = '';
-  const d = EDIT.garments[i]; ids.forEach((id, k) => d.files.push({id, kind: d.files.length === 0 && k === 0 ? 'fabric' : 'reference', caption: ''}));
-  softRender(); if(ids.length) toast(`${ids.length} image${ids.length > 1 ? 's' : ''} added — set the type on the garment's Design tab after saving`, 'ok');
+  const d = EDIT.garments[i], kind = document.getElementById('dk_' + i)?.value || 'reference'; ids.forEach(id => d.files.push({id, kind, caption: ''}));
+  softRender(); if(ids.length) toast(`${ids.length} ${kindName(kind).toLowerCase()}${ids.length > 1 ? 's' : ''} added to article ${i + 1}`, 'ok');
 }
 function autoAssignDraft(i){ const d = EDIT.garments[i]; let n = 0; d.steps.forEach(s => { if(isOut(s) || s.workerId || s.status !== 'pending' || stage(s.stageId).kind === 'trial') return; const c = coll('workers').filter(z => z.active !== false && (z.skills || []).includes(s.stageId)).sort(by(z => sched().end[z.id] || 0)); if(c[0]){ s.workerId = c[0].id; n++; } }); softRender(); toast(n ? `Assigned ${n} step(s) to the least-loaded skilled workers` : 'Nothing to assign', 'ok'); }
 function pickDesignDraft(i){
@@ -2357,7 +2400,7 @@ async function saveOrder(){
         const before = clone(p); p.values = clone(d.meas); p.unit = d.unit || 'in'; p.specs = clone(d.specs); p.fitNotes = d.fit; p.updated = nowISO();
         p.versions.push({at: nowISO(), by: meName(), unit: d.unit || 'in', values: clone(d.meas), specs: clone(d.specs), fitNotes: d.fit, note: 'Updated for ' + o.no + '/' + idx}); logChange(p, 'Measurements updated for ' + o.no + '/' + idx, before, clone(p));
       }
-      const files = d.files.map(f => ({id: f.id, kind: f.kind, caption: ''})), dz = design(d.designId);
+      const files = d.files.map(f => ({id: f.id, kind: f.kind, caption: f.caption || ''})), dz = design(d.designId);
       if(dz && !files.length) dzFiles(dz).forEach(f => files.push(f));
       const g = {id: uid('g'), orderId: o.id, customerId: o.customerId, idx, no: o.no + '/' + idx, tplId: d.tplId, title: d.title || t.name, qty: num(d.qty) || 1, profileId: p.id, memberId: d.memberId, unit: d.unit || 'in', meas: clone(d.meas), specs: clone(d.specs), style: d.style, fit: d.fit, urgent: !!d.urgent, instructions: d.instructions, fabricSource: d.fabricSource, deliveryDate: d.deliveryDate || o.deliveryDate, targets: {},
         components: d.components.map(c => ({...c, issued: 0})), steps: d.steps.map(s => ({...s})), design: {catalogId: d.designId, versions: (files.length || dz) ? [{v: 1, at: nowISO(), by: meName(), note: 'At booking', files, fields: {pattern: dz ? dz.name : '', placement: '', lining: '', trims: '', colours: '', notes: ''}, approved: !!d.designApproved, approvedAt: d.designApproved ? nowISO() : '', approvedBy: d.designApproved ? meName() : ''}] : [], approvedV: d.designApproved ? 1 : 0},
@@ -2697,7 +2740,7 @@ const kindName = k => (FILE_KINDS.find(x => x[0] === k) || [k, k])[1];
 function gDesign(g, o, c, t){
   const D = g.design || (g.design = {versions: [], approvedV: 0}), dz = design(D.catalogId), ed = gEditable(), L = D.versions.slice().reverse(), latest = D.versions[D.versions.length - 1];
   return `<div class="card"><div class="row ac"><div><h3 style="margin:0">Catalogue design</h3>${dz ? `<div class="row ac" style="margin-top:6px"><div class="dimg" style="width:80px;height:60px;aspect-ratio:auto;border-radius:8px" data-media="${h(dzCover(dz))}">✦</div><div><b>${h(dz.name)}</b> <span class="muted">${h(dz.code)} · ${h(dz.style || '')}</span><div><a href="#design-${dz.id}">Open in catalogue</a></div></div></div>` : '<div class="muted">Not linked to a catalogue design.</div>'}</div><span class="sp"></span>
-    ${ed ? `<button onclick="linkDesign('${g.id}')">${dz ? 'Change' : 'Link'} catalogue design</button><button class="pri" onclick="newDesignVersion('${g.id}')">+ New design version</button>` : ''}<button onclick="artisanPDF('${g.id}')">⬇ Artisan sheet PDF</button></div></div>
+    ${ed ? `<button onclick="linkDesign('${g.id}')">${dz ? 'Change' : 'Link'} catalogue design</button><button onclick="sketchGarment('${g.id}')">✏ Draw sketch</button><button class="pri" onclick="newDesignVersion('${g.id}')">+ New design version</button>` : ''}<button onclick="artisanPDF('${g.id}')">⬇ Artisan sheet PDF</button></div></div>
   ${!L.length ? '<div class="card empty">No design file yet. Add a version with fabric photos, sketches and embroidery references.</div>' : ''}
   ${L.map(x => { const appr = x.v === D.approvedV, isLatest = x === latest, editing = UI.gd && UI.gd._ver === x.v;
     const F = editing ? UI.gd.fields : x.fields;
@@ -2705,8 +2748,8 @@ function gDesign(g, o, c, t){
       ${ed && !appr ? `<button class="sm okb" onclick="approveVersion('${g.id}',${x.v})">Mark customer-approved</button>` : ''}${ed && isLatest && !appr ? (editing ? `<button class="sm" onclick="UI.gd=null;render()">Cancel</button><button class="sm pri" onclick="saveVersionFields('${g.id}',${x.v})">Save</button>` : `<button class="sm" onclick="UI.gd={_ver:${x.v},fields:clone(gar('${g.id}').design.versions.find(z=>z.v===${x.v}).fields)};render()">✎ Edit details</button>`) : ''}</div>
       ${appr && x.approvedAt ? `<div class="hint">Approved ${fmtDT(x.approvedAt)}${x.approvedBy ? ' by ' + h(x.approvedBy) : ''}${x.approvalNote ? ' — ' + h(x.approvalNote) : ''}</div>` : ''}
       <div class="fgrid" style="margin-top:10px">${[['pattern', 'Design / pattern'], ['placement', 'Embroidery placement'], ['lining', 'Lining colour'], ['trims', 'Trims & accessories'], ['colours', 'Colours / shade'], ['notes', 'Notes']].map(([k, l]) => editing ? `<div ${k === 'notes' ? 'class="full"' : ''}><label>${l}</label><input data-root="GD" data-p="fields.${k}" value="${v(F[k])}"></div>` : `<div ${k === 'notes' ? 'class="full"' : ''}><span class="muted" style="font-size:12px">${l}</span><div>${h(F[k] || '—')}</div></div>`).join('')}</div>
-      <div class="row ac" style="margin-top:10px"><h3 style="margin:0">Files</h3><span class="sp"></span>${ed && isLatest && !appr ? `<select id="fk_${x.v}" style="width:auto">${FILE_KINDS.map(([k, l]) => opt(k, l)).join('')}</select><label class="btn sm" style="margin:0;color:var(--ink)">⬆ Upload<input type="file" accept="image/*" multiple style="display:none" onchange="uploadVersionFiles('${g.id}',${x.v},this)"></label>` : ''}</div>
-      ${x.files.length ? `<div class="thumbs" style="margin-top:6px">${x.files.map((f, k) => `<div class="thumb" data-media="${h(f.id)}" onclick="lightboxIds(${h(JSON.stringify(x.files.map(z => z.id)))},${k},${h(JSON.stringify(x.files.map(z => kindName(z.kind) + (z.caption ? ': ' + z.caption : ''))))})"><span class="cap">${h(kindName(f.kind))}</span>${ed && isLatest && !appr ? `<button class="tbtn" onclick="event.stopPropagation();rmVersionFile('${g.id}',${x.v},${k})">✕</button>` : ''}</div>`).join('')}</div>` : '<div class="muted" style="margin-top:4px">No files in this version.</div>'}
+      <div class="row ac" style="margin-top:10px"><h3 style="margin:0">Files</h3><span class="sp"></span>${ed && isLatest && !appr ? `<select id="fk_${x.v}" style="width:auto">${FILE_KINDS.map(([k, l]) => opt(k, l)).join('')}</select><label class="btn sm" style="margin:0;color:var(--ink)">⬆ Upload<input type="file" accept="image/*" multiple style="display:none" onchange="uploadVersionFiles('${g.id}',${x.v},this)"></label><button class="sm" onclick="sketchGarment('${g.id}')">✏ Sketch</button>` : ''}</div>
+      ${x.files.length ? `<div class="thumbs" style="margin-top:6px">${x.files.map((f, k) => `<div class="thumb" data-media="${h(f.id)}" onclick="lightboxIds(${h(JSON.stringify(x.files.map(z => z.id)))},${k},${h(JSON.stringify(x.files.map(z => kindName(z.kind) + (z.caption ? ': ' + z.caption : ''))))})"><span class="cap">${h(kindName(f.kind))}${f.caption ? ': ' + h(f.caption) : ''}</span>${ed ? `<button class="tedit" title="Draw over this image" onclick="event.stopPropagation();sketchGarment('${g.id}','${h(f.id)}')">✏</button>` : ''}${ed && isLatest && !appr ? `<button class="tbtn" onclick="event.stopPropagation();rmVersionFile('${g.id}',${x.v},${k})">✕</button>` : ''}</div>`).join('')}</div>` : '<div class="muted" style="margin-top:4px">No files in this version.</div>'}
     </div>`; }).join('')}
   <div class="hint">Approved versions are locked. Any change — even a small one — creates a new version, so earlier designs always stay available. Production warns if cutting or embroidery starts without an approved version.</div>`;
 }
@@ -3407,7 +3450,7 @@ function spinPlay(id){ const el = document.getElementById(id); if(!el || !el._ur
 function confTypes(){
   const k = Math.max(0, Math.min(UI.ttab || 0, coll('templates').length - 1)), t = DB.templates[k];
   return `<div class="card"><div class="row ac">${coll('templates').map((x, j) => `<button class="sm ${j === k ? 'pri' : ''}" onclick="UI.ttab=${j};render()">${h(x.name)}</button>`).join('')}<span class="sp"></span><button class="sm" onclick="addTpl()">+ New garment type</button>${t ? `<button class="sm" onclick="dupTpl(${k})">Duplicate</button><button class="sm danger" onclick="rmTpl(${k})">Delete</button>` : ''}</div></div>
-  ${t ? `<div class="card"><div class="fgrid"><div><label>Garment type name</label><input data-root="DB" data-p="templates.${k}.name" value="${v(t.name)}"></div><div><label>Category</label><input data-root="DB" data-p="templates.${k}.category" value="${v(t.category)}" placeholder="Women, Men, Bridal, Kids…"></div></div></div>
+  ${t ? `<div class="card"><div class="fgrid"><div><label>Garment type name</label><input data-root="DB" data-p="templates.${k}.name" value="${v(t.name)}"></div><div><label>Category</label><input data-root="DB" data-p="templates.${k}.category" value="${v(t.category)}" placeholder="Women, Men, Bridal, Kids…"></div><div><label>Short code (diary / tracker)</label><input data-root="DB" data-p="templates.${k}.code" value="${v(t.code)}" placeholder="BL, Top, S F&P…" style="max-width:140px"></div></div></div>
   <div class="grid2"><div class="card"><h3>Measurement sheet(s) for this article</h3><div class="row" style="gap:12px;flex-wrap:wrap">${Object.entries(CHARTS).map(([ck, C2]) => `<label class="inline"><input type="checkbox" ${(t.charts || []).includes(ck) ? 'checked' : ''} onchange="setCharts(${k},'${ck}',this.checked)"> ${h(C2.name)} (${C2.items.length})</label>`).join('')}</div>
     <div class="hint">The order taker sees one diagram per measurement, in the same order as the studio's printed sheet. Pick two for a set (e.g. Top + Bottom for a salwar suit).</div>
     ${(t.charts || []).length ? `<div class="mcards" style="margin-top:10px;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))">${t.charts.flatMap(ck => CHARTS[ck].items.map(it => `<div class="mcard view"><div class="mhead"><span class="mno">${it[0]}</span><span class="mlab" style="font-size:11px">${h(it[1])}</span></div><div class="msvg">${measSVG(ck, it)}</div></div>`)).join('')}</div>`
@@ -3591,6 +3634,179 @@ async function renderLocalBackups(){ const el = document.getElementById('bklist'
 function restoreLocal(k){ ask('Restore this backup? Current data is replaced (a backup of it is saved first).', async () => { await idbPut('backups', 'bk_' + nowISO(), JSON.stringify(DB)); const j = await idbGet('backups', k); DB = JSON.parse(j); migrate(); save(); render(); toast('Restored', 'ok'); }); }
 function restoreCentral(id){ ask('Restore this central backup? Every device will see the restored data. A backup of the current data is taken first.', async () => { await autoBackup(true); try{ const r = await fetch('/_blob/' + id), x = await r.json(); const acc = DB.access, st = DB.state; DB = Object.assign(emptyDB(), x); DB.access = acc; DB.state = Object.assign(x.state || {}, {backups: st.backups}); migrate(); save(); render(); toast('Restored', 'ok'); }catch(e){ toast('Restore failed: ' + e.message, 'bad'); } }); }
 VIEWS.setup.after = (() => { const prev = VIEWS.setup.after; return id => { prev && prev(id); if((UI.stab || 'shop') === 'data' && MODE === 'local') renderLocalBackups(); }; })();
+
+/* =====================================================================
+   sketch.js : designer sketch pad — draw a design on a front/back
+               stencil (or over a photo) and attach it to an article
+   ===================================================================== */
+const STENCILS = [['blouse', 'Blouse / choli — front & back'], ['top', 'Kurti / top / dress — front & back'], ['lower', 'Bottom / lehenga / skirt — front & back'], ['men', 'Men — kurta / jacket — front & back'], ['blank', 'Blank page']];
+function stencilSVG(kind){
+  if(kind === 'blank') return '';
+  const f = kind === 'men' ? 'm' : 'w', y0 = kind === 'lower' ? 112 : 0, y1 = kind === 'blouse' || kind === 'men' ? 205 : kind === 'top' ? 330 : 385, H = y1 - y0;
+  const one = (dx, back) => `<g transform="translate(${dx},0)" fill="none" stroke="#9c9c9c" stroke-width="0.9" stroke-linejoin="round">
+    <path d="${armPath(f, 1)} ${armPath(f, -1)}"/><path d="${bodyPath(f)}" fill="#fff"/><rect x="${100 - (f === 'm' ? 8 : 7)}" y="31" width="${f === 'm' ? 16 : 14}" height="19" rx="3" fill="#fff"/><ellipse cx="100" cy="19" rx="${f === 'm' ? 12 : 11}" ry="15" fill="#fff"/>
+    ${back ? `<path d="M100,52 L100,${Math.min(y1, 190)}" stroke-dasharray="3 3" stroke="#c8c8c8"/>` : `<path d="M100,50 L100,58" stroke="#c8c8c8"/>${f === 'w' ? `<path d="M${MP(-22, 92)} Q${MP(-12, 103)} ${MP(-3, 95)} M${MP(3, 95)} Q${MP(12, 103)} ${MP(22, 92)}" stroke="#d2d2d2"/>` : ''}`}
+    <path d="M${MP(-31, 132)} L${MP(31, 132)}" stroke="#e0e0e0" stroke-dasharray="2 3"/></g>
+    <text x="${dx + 100}" y="${y0 + H - 4}" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#b0b0b0">${back ? 'BACK' : 'FRONT'}</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${y0} 400 ${H}" width="1400" height="${Math.round(1400 * H / 400)}"><rect x="0" y="${y0}" width="400" height="${H}" fill="#fff"/>${one(0, false)}${one(200, true)}</svg>`;
+}
+const SK = {};
+const SK_COLORS = ['#1f3a93', '#111111', '#c0392b', '#7a2948', '#b8860b', '#2e7d4f', '#e17fa6'];
+function loadImg(src){ return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
+/* opts: {title, base (media id to draw over), stencil, onSave(mediaId, caption)} */
+async function openSketchPad(opts){
+  Object.assign(SK, {opts, color: SK_COLORS[0], size: 3, tool: 'pen', undo: [], stencil: opts.base ? 'photo' : (opts.stencil || 'blouse')});
+  openModal(`<div class="mbar"><b>✏ ${h(opts.title || 'Design sketch')}</b><span class="sp"></span><button onclick="closeModal()">Cancel</button><button class="pri" id="skSave" onclick="saveSketch()">Save to article</button></div>
+  <div class="sktools">
+    <select id="skSt" onchange="skStencil(this.value)" style="width:auto">${STENCILS.map(([k, l]) => opt(k, l, SK.stencil)).join('')}${opts.base ? opt('photo', 'Current image', 'photo') : ''}</select>
+    <label class="btn sm" style="margin:0;color:var(--ink)">📷 Draw over a photo<input type="file" accept="image/*" style="display:none" onchange="skPhoto(this)"></label>
+    <span class="skgrp">${SK_COLORS.map((c, i) => `<button class="skc ${i ? '' : 'on'}" style="background:${c}" title="Colour" onclick="skSet('color','${c}',this)"></button>`).join('')}</span>
+    <span class="skgrp">${[[2, 'Fine'], [3, 'Pen'], [6, 'Marker'], [14, 'Brush']].map(([s, l]) => `<button class="sm ${s === 3 ? 'on' : ''}" data-sz onclick="skSet('size',${s},this)">${l}</button>`).join('')}</span>
+    <span class="skgrp"><button class="sm on" data-tl="pen" onclick="skTool('pen',this)">✏ Pen</button><button class="sm" data-tl="line" onclick="skTool('line',this)">／ Line</button><button class="sm" data-tl="text" onclick="skTool('text',this);document.getElementById('skTxt').focus()">T Text</button><input id="skTxt" placeholder="text, then tap the sketch" style="width:170px;padding:4px 8px"><button class="sm" data-tl="erase" onclick="skTool('erase',this)">⌫ Eraser</button></span>
+    <span class="skgrp"><button class="sm" onclick="skUndo()">↶ Undo</button><button class="sm ghost danger" onclick="skClear()">Clear</button></span>
+  </div>
+  <div class="skwrap" id="skWrap"><canvas id="skBg"></canvas><canvas id="skInk"></canvas></div>
+  <div class="row ac" style="margin-top:8px"><input id="skCap" placeholder="Caption, e.g. Riya – zardosi front, deep U back with latkans" style="flex:1"><span class="muted" style="font-size:12px">Draw with a finger, stylus or mouse.</span></div>`, true);
+  await skStencil(SK.stencil, true);
+  const ink = document.getElementById('skInk'); let drawing = false, last = null, start = null, snap = null;
+  const pt = e => { const r = ink.getBoundingClientRect(); return [(e.clientX - r.left) * ink.width / r.width, (e.clientY - r.top) * ink.height / r.height]; };
+  const ctx = ink.getContext('2d'), scale = () => ink.width / ink.getBoundingClientRect().width;
+  const style = () => { ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalCompositeOperation = SK.tool === 'erase' ? 'destination-out' : 'source-over'; ctx.strokeStyle = SK.color; ctx.lineWidth = (SK.tool === 'erase' ? SK.size * 4 : SK.size) * scale(); };
+  ink.onpointerdown = e => {
+    e.preventDefault(); const p = pt(e); skPush();
+    if(SK.tool === 'text'){ const tx = document.getElementById('skTxt').value.trim(); if(tx){ ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = SK.color; ctx.font = `${Math.round((14 + SK.size * 3) * scale())}px sans-serif`; ctx.fillText(tx, p[0], p[1]); } else { SK.undo.pop(); toast('Type the text in the box first, then tap where it goes', 'info'); } return; }
+    drawing = true; last = p; start = p; ink.setPointerCapture(e.pointerId); style();
+    if(SK.tool === 'line') snap = ctx.getImageData(0, 0, ink.width, ink.height); else { ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(p[0] + 0.01, p[1]); ctx.stroke(); }
+  };
+  ink.onpointermove = e => {
+    if(!drawing) return; e.preventDefault(); style();
+    if(SK.tool === 'line'){ const p = pt(e); ctx.putImageData(snap, 0, 0); ctx.beginPath(); ctx.moveTo(start[0], start[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); return; }
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e]; (evs.length ? evs : [e]).forEach(ev => { const p = pt(ev); ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p; });
+  };
+  ink.onpointerup = ink.onpointercancel = () => { drawing = false; snap = null; };
+}
+async function skStencil(kind, first){
+  const bg = document.getElementById('skBg'), ink = document.getElementById('skInk'); if(!bg) return;
+  let im = null;
+  if(kind === 'photo' && SK.opts.base){ const u = await mediaUrl(SK.opts.base); if(u) im = await loadImg(u).catch(() => null); }
+  else if(kind === 'photo' && SK.photo) im = SK.photo;
+  else if(kind !== 'blank'){ const svg = stencilSVG(kind); im = await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)); }
+  const W = 1400, Hh = im ? Math.min(2000, Math.round(W * (im.naturalHeight || im.height) / (im.naturalWidth || im.width))) : 900;
+  const keep = !first && ink.width ? ink.toDataURL() : null;
+  [bg, ink].forEach(c => { c.width = W; c.height = Hh; });
+  const b = bg.getContext('2d'); b.fillStyle = '#fff'; b.fillRect(0, 0, W, Hh); if(im) b.drawImage(im, 0, 0, W, Hh);
+  if(keep){ const k = await loadImg(keep); ink.getContext('2d').drawImage(k, 0, 0, W, Hh); }
+  SK.stencil = kind;
+}
+async function skPhoto(inp){ const f = inp.files[0]; inp.value = ''; if(!f) return; const u = URL.createObjectURL(f); SK.photo = await loadImg(u); const sel = document.getElementById('skSt'); if(![...sel.options].some(o => o.value === 'photo')) sel.add(new Option('Uploaded photo', 'photo')); sel.value = 'photo'; SK.opts.base = null; skStencil('photo'); }
+function skSet(k, val, el){ SK[k] = val; el.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on')); el.classList.add('on'); if(k === 'color' && SK.tool === 'erase') skTool('pen', document.querySelector('[data-tl="pen"]')); }
+function skTool(t, el){ SK.tool = t; document.querySelectorAll('[data-tl]').forEach(b => b.classList.toggle('on', b === el)); }
+function skPush(){ const ink = document.getElementById('skInk'); SK.undo.push(ink.getContext('2d').getImageData(0, 0, ink.width, ink.height)); if(SK.undo.length > 25) SK.undo.shift(); }
+function skUndo(){ const ink = document.getElementById('skInk'), d = SK.undo.pop(); if(d) ink.getContext('2d').putImageData(d, 0, 0); }
+function skClear(){ skPush(); const ink = document.getElementById('skInk'); ink.getContext('2d').clearRect(0, 0, ink.width, ink.height); }
+async function saveSketch(){
+  const bg = document.getElementById('skBg'), ink = document.getElementById('skInk'), btn = document.getElementById('skSave');
+  const out = document.createElement('canvas'); out.width = bg.width; out.height = bg.height; const o = out.getContext('2d'); o.drawImage(bg, 0, 0); o.drawImage(ink, 0, 0);
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', 0.88)), id = await mediaPut(blob), cap = document.getElementById('skCap').value.trim();
+  const cb = SK.opts.onSave; closeModal(); cb(id, cap); toast('Sketch saved to the article', 'ok');
+}
+/* attach points */
+function sketchDraft(i, base){ const d = EDIT.garments[i]; openSketchPad({title: `Sketch · article ${i + 1} · ${d.title}`, base, stencil: stencilFor(d.tplId), onSave: (id, cap) => { d.files.push({id, kind: 'sketch', caption: cap}); softRender(); }}); }
+function sketchGarment(gid, base){
+  const g = gar(gid);
+  openSketchPad({title: `Sketch · ${g.no} ${g.title}`, base, stencil: stencilFor(g.tplId), onSave: (id, cap) => {
+    const D = g.design || (g.design = {versions: [], approvedV: 0}), before = clone(g); let z = D.versions[D.versions.length - 1];
+    if(!z || z.approved){ D.versions.push({v: D.versions.length + 1, at: nowISO(), by: meName(), note: z ? 'Designer sketch (change after approval)' : 'Designer sketch', files: z ? clone(z.files) : [], fields: z ? clone(z.fields) : {pattern: '', placement: '', lining: '', trims: '', colours: '', notes: ''}, approved: false, approvedAt: '', approvedBy: ''}); z = D.versions[D.versions.length - 1]; }
+    z.files.push({id, kind: 'sketch', caption: cap}); gLog(g, `Designer sketch added to design version ${z.v}`, before); save(); render();
+  }});
+}
+function stencilFor(tplId){ const t = tpl(tplId) || {}; if(t.category === 'Men') return 'men'; const ch = t.charts || []; return ch.includes('blouse') ? 'blouse' : ch.includes('top') ? 'top' : ch.includes('bottom') ? 'lower' : 'blouse'; }
+
+/* =====================================================================
+   ui_tracker.js : delivery tracker — every order with its articles, job,
+                   units, mobile, committed delivery date and status,
+                   always in ascending order of committed delivery date
+   ===================================================================== */
+function jobSummary(gs){ const m = new Map(); gs.forEach(g => { const c = tpl(g.tplId)?.code || tpl(g.tplId)?.name || 'Item'; m.set(c, (m.get(c) || 0) + gq(g)); }); return [...m].map(([c, n]) => `${n} ${c}`).join(' + '); }
+const TR_ST = {ready: ['Ready to deliver', 'c-ok'], partready: ['Partly ready', 'c-ok'], production: ['In production', 'c-acc'], planned: ['Not started', 'c-mut'], hold: ['On hold', 'c-warn'], delivered: ['Delivered', 'c-mut'], partdel: ['Part delivered', 'c-info'], cancelled: ['Cancelled', 'c-bad']};
+function orderTrack(o){
+  const gs = activeG(o), st = gs.map(gStatus), pend = gs.filter((g, k) => st[k] !== 'delivered');
+  const commit = (pend.length ? pend : gs).map(g => g.deliveryDate || o.deliveryDate).filter(Boolean).sort()[0] || o.deliveryDate || '';
+  let stage;
+  if(o.status === 'cancelled') stage = 'cancelled';
+  else if(!gs.length || !pend.length) stage = 'delivered';
+  else if(pend.every(g => gStatus(g) === 'ready')) stage = 'ready';
+  else if(pend.some(g => gStatus(g) === 'ready')) stage = 'partready';
+  else if(pend.every(g => gStatus(g) === 'hold')) stage = 'hold';
+  else if(pend.some(g => ['production', 'qc'].includes(gStatus(g)))) stage = 'production';
+  else stage = st.includes('delivered') ? 'partdel' : 'planned';
+  const open = !['delivered', 'cancelled'].includes(stage);
+  return {o, gs, pend, commit, stage, open, units: sum(gs, gq), pendUnits: sum(pend, gq), job: jobSummary(gs), overdue: open && commit && commit < todayISO(), urgent: o.urgent || gs.some(g => g.urgent)};
+}
+function trackList(){
+  const f = UI.trf || 'open', q = (UI.trq || '').toLowerCase().trim(), from = UI.trFrom || '', to = UI.trTo || '';
+  const all = coll('orders').map(orderTrack);
+  const match = x => { if(!q) return true; const c = cust(x.o.customerId) || {}; return `${x.o.no} ${c.name} ${c.phone} ${c.phone2} ${members(c).map(m => m.name).join(' ')} ${x.gs.map(g => g.no + ' ' + g.title).join(' ')}`.toLowerCase().includes(q) || (q.replace(/\D/g, '').length >= 4 && `${c.phone}${c.phone2}`.replace(/\D/g, '').includes(q.replace(/\D/g, ''))); };
+  const inF = {open: x => x.open, ready: x => x.open && ['ready', 'partready'].includes(x.stage), wip: x => x.open && !['ready'].includes(x.stage), overdue: x => x.overdue, delivered: x => x.stage === 'delivered', all: () => true};
+  const base = all.filter(match).filter(x => (!from || x.commit >= from) && (!to || x.commit <= to));
+  const counts = {}; Object.keys(inF).forEach(k => counts[k] = base.filter(inF[k]).length);
+  const L = base.filter(inF[f] || inF.open).sort((a, b) => (a.commit || '9999').localeCompare(b.commit || '9999') || (b.urgent - a.urgent) || a.o.no.localeCompare(b.o.no, undefined, {numeric: true}));
+  return {L, counts};
+}
+const relDay = d => { if(!d) return ''; const n = Math.round((new Date(d) - new Date(todayISO())) / 864e5); return n === 0 ? 'Today' : n === 1 ? 'Tomorrow' : n === -1 ? 'Yesterday' : n < 0 ? `${-n} days overdue` : `in ${n} days`; };
+VIEWS.tracker = {perm: 'orders', title: 'Delivery tracker', fn: () => {
+  const {L, counts} = trackList(), f = UI.trf || 'open';
+  const tabs = [['open', 'To deliver'], ['ready', 'Ready to deliver'], ['wip', 'In progress'], ['overdue', 'Overdue'], ['delivered', 'Delivered'], ['all', 'All']];
+  return `<div class="row ac"><div><h1>Delivery tracker</h1><div class="sub">All orders, earliest committed delivery first. Tap an order to see its articles. <span class="trlegend">Green</span> = ready to deliver.</div></div><span class="sp"></span><button onclick="trackerCSV()">⬇ CSV</button><button onclick="trackerPDF()">⬇ Print list</button></div>
+  <div class="card trbar">
+    <div class="row ac" style="gap:8px"><input id="trq" placeholder="Search order no., name, mobile, family member…" value="${v(UI.trq)}" oninput="UI.trq=this.value;clearTimeout(window._trt);window._trt=setTimeout(()=>{softRender();const i=document.getElementById('trq');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}},250)" style="flex:1;min-width:220px">
+      <label class="inline">From <input type="date" value="${v(UI.trFrom)}" onchange="UI.trFrom=this.value;render()" style="width:auto;margin-left:4px"></label><label class="inline">To <input type="date" value="${v(UI.trTo)}" onchange="UI.trTo=this.value;render()" style="width:auto;margin-left:4px"></label>
+      ${UI.trFrom || UI.trTo || UI.trq ? '<button class="sm ghost" onclick="UI.trFrom=UI.trTo=UI.trq=\'\';render()">Clear</button>' : ''}</div>
+    <div class="tabs" style="margin:10px 0 0">${tabs.map(([k, l]) => `<button class="${f === k ? 'on' : ''}" onclick="UI.trf='${k}';UI.trSel='';render()">${l} <span class="tcount">${counts[k]}</span></button>`).join('')}</div></div>
+  ${!L.length ? '<div class="card empty">No orders match.</div>' : `<div class="trlist"><div class="trhead"><span>Committed delivery ↑</span><span>Order</span><span>Customer · mobile</span><span>Articles</span><span class="n">Units</span><span>Status</span><span></span></div>
+  ${L.map(x => trRow(x, UI.trSel === x.o.id)).join('')}</div>`}`;
+}};
+function trToggle(oid){ UI.trSel = UI.trSel === oid ? '' : oid; softRender(); if(UI.trSel) setTimeout(() => { const el = document.getElementById('tr-' + oid); if(el){ const r = el.getBoundingClientRect(); if(r.top < 60 || r.top > innerHeight - 120) el.scrollIntoView({behavior: 'smooth', block: 'start'}); } }, 30); }
+function trRow(x, open){
+  const o = x.o, c = cust(o.customerId) || {}, [sl, sc] = TR_ST[x.stage];
+  return `<div class="tritem ${open ? 'open' : ''} ${x.stage === 'ready' ? 'trready' : x.stage === 'partready' ? 'trpart' : ''} ${x.overdue ? 'late' : ''}" id="tr-${o.id}">
+    <div class="trsum" role="button" tabindex="0" aria-expanded="${open}" onclick="trToggle('${o.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();trToggle('${o.id}')}">
+      <span class="trd"><b>${x.commit ? fmtDs(x.commit) : '—'}</b><small class="${x.overdue ? 'danger' : 'muted'}">${x.open ? relDay(x.commit) : 'done'}</small></span>
+      <span class="tro"><b>${h(o.no)}</b>${x.urgent ? ' <span class="chip urgent">URGENT</span>' : ''}</span>
+      <span class="trc"><b>${h(c.name || '')}</b><small class="muted">${h(c.phone || '')}</small></span>
+      <span class="trj">${h(x.job)}</span>
+      <span class="n tru">${x.units}<small class="muted"> pcs</small></span>
+      <span class="trs"><span class="chip ${sc}">${sl}</span></span>
+      <span class="trchev">${open ? '▴' : '▾'}</span></div>
+    ${open ? trDetail(x) : ''}</div>`;
+}
+function trDetail(x){
+  const o = x.o, c = cust(o.customerId) || {}, T = can('prices') ? orderTotals(o) : null;
+  return `<div class="trbody">
+    <div class="trmeta">${c.phone ? `<a class="btn sm" href="tel:${h(c.phone.replace(/\s/g, ''))}">📞 Call</a>` : ''}${can('comms') ? `<button class="sm" onclick="openCompose('${o.id}','${x.stage === 'ready' || x.stage === 'partready' ? 'ready' : ''}')">💬 Message</button>` : ''}${x.stage === 'ready' || x.stage === 'partready' ? `<button class="sm okb" onclick="go('qc')">Hand over</button>` : ''}<button class="sm pri" onclick="go('order-${o.id}')">Open order →</button>
+      <span class="sp"></span><span class="muted" style="font-size:12.5px">Booked ${fmtD(o.created)}${T ? ` · Total ${inr(T.total)} · Paid ${inr(T.paid)} · <b class="${T.bal > 0.5 ? 'danger' : 'okc'}">Balance ${inr(Math.max(0, T.bal))}</b>` : ''}</span></div>
+    ${o.instructions ? `<div class="flag" style="margin:8px 0 0"><b>Special instructions:</b> ${h(o.instructions)}</div>` : ''}
+    <table class="trarts"><thead><tr><th></th><th>Article</th><th>For</th><th class="n">Qty</th><th>Job description</th><th>Now at</th><th>Due</th><th>Status</th></tr></thead><tbody>${x.gs.map(trArticle).join('')}</tbody></table></div>`;
+}
+function trArticle(g){
+  const D = g.design || {}, V = (D.versions || []).find(z => z.v === D.approvedV) || (D.versions || []).slice(-1)[0], img = V?.files?.find(f => f.kind === 'sketch') || V?.files?.[0], jd = workDetail(g);
+  return `<tr class="click" onclick="go('garment-${g.id}')"><td>${img ? `<div class="trimg" data-media="${h(img.id)}"></div>` : '<div class="trimg none">—</div>'}</td>
+    <td><b>${h(g.no)}</b><div>${h(g.title)}</div></td><td>${h(memLabel(g.customerId, g.memberId, true) || '—')}</td><td class="n"><b>${gq(g)}</b></td>
+    <td class="trjd">${h(jd.length > 140 ? jd.slice(0, 140) + '…' : jd || '—')}${g.instructions ? `<div class="danger" style="font-weight:600">${h(g.instructions)}</div>` : ''}</td>
+    <td>${h(gStageLabel(g))}</td><td>${dateChip(g.deliveryDate, !gLive(g))}</td><td>${gChip(g)}</td></tr>`;
+}
+function trackerRows(){ return trackList().L.map(x => { const c = cust(x.o.customerId) || {}; return [x.commit, x.o.no, c.name, c.phone, x.job, x.units, TR_ST[x.stage][0], x.gs.map(g => `${g.no} ${g.title} x${gq(g)} [${TR_ST[gStatus(g) === 'ready' ? 'ready' : gStatus(g) === 'delivered' ? 'delivered' : 'production'][0]}]`).join('; ')]; }); }
+function trackerCSV(){ saveCSV(`delivery-tracker-${todayISO()}.csv`, [['Committed delivery', 'Order', 'Customer', 'Mobile', 'Job', 'Units', 'Status', 'Articles'], ...trackerRows()]); }
+async function trackerPDF(){
+  const doc = new PDFDoc({landscape: true}), R = trackerRows(), f = UI.trf || 'open';
+  await pdfHeader(doc, 'DELIVERY TRACKER', [{open: 'To deliver', ready: 'Ready to deliver', wip: 'In progress', overdue: 'Overdue', delivered: 'Delivered', all: 'All orders'}[f], `Printed ${fmtDT(nowISO())}`, `${R.length} orders`]);
+  const rows = []; let last = null;
+  R.forEach(r => { if(r[0] !== last){ last = r[0]; rows.push({_section: r[0] ? `${fmtD(r[0])} - ${new Date(r[0]).toLocaleDateString('en-IN', {weekday: 'long'})} (${relDay(r[0])})` : 'No date'}); } const ready = r[6] === 'Ready to deliver'; rows.push(Object.assign([r[1], r[2] || '', r[3] || '', r[4], String(r[5]), r[6], ready ? '' : '[  ]'], ready ? {_bold: true, _color: '#2e7d4f'} : {})); });
+  doc.table([{t: 'Order', w: 0.9}, {t: 'Customer', w: 1.6}, {t: 'Mobile', w: 1.2}, {t: 'Articles / job', w: 2.6}, {t: 'Units', w: 0.5, align: 'right'}, {t: 'Status', w: 1.2}, {t: 'Done', w: 0.5}], rows, {size: 9});
+  doc.para('Green bold rows are ready to deliver.', 8, '#666666');
+  await openPDF(doc, `delivery-tracker-${todayISO()}.pdf`);
+}
 
 /* =====================================================================
    pdfdocs.js : invoice, receipt, measurement sheet, job card,

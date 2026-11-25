@@ -3,7 +3,7 @@
    ===================================================================== */
 const NAV = [
   ['Workspace', [['dashboard', 'Dashboard', 'dash'], ['mytasks', 'My tasks', 'mytasks'], ['alerts', 'Alerts', 'alerts']]],
-  ['Orders', [['orders', 'Orders & garments', 'orders'], ['customers', 'Customers & measurements', 'customers']]],
+  ['Orders', [['tracker', 'Delivery tracker', 'orders'], ['orders', 'Orders & garments', 'orders'], ['customers', 'Customers & measurements', 'customers']]],
   ['Production', [['board', 'Production board', 'orders'], ['planner', 'Stitching & delivery planner', 'planner'], ['embroidery', 'Embroidery & handwork', 'embroidery'], ['trials', 'Trials & alterations', 'trials'], ['qc', 'QC & delivery', 'qc']]],
   ['Resources', [['workers', 'Workers & workload', 'workers'], ['vendors', 'Outside vendors', 'vendors'], ['inventory', 'Materials & stock', 'inventory']]],
   ['Money', [['billing', 'Billing & payments', 'billing'], ['reports', 'Owner reports', 'reports']]],
@@ -74,6 +74,7 @@ function migrate(){
   if(!coll('templates').length) DB.templates = defaultTemplates();
   if(!coll('msgTemplates').length) DB.msgTemplates = defaultMsgTemplates();
   migrateMeasure(); migrateHeads();
+  const dt = defaultTemplates(); coll('templates').forEach(t => { if(!t.code) t.code = dt.find(x => x.id === t.id)?.code || (t.name || '').split(/[ (/]/)[0].slice(0, 8); });
 }
 /* invoice charge heads aligned to the studio's own invoice columns */
 function migrateHeads(){

@@ -113,8 +113,8 @@ VIEWS.orders = {perm: 'orders', title: 'Orders', fn: () => {
   }
   const L = coll('orders').filter(o => { const c = cust(o.customerId), [st] = orderState(o); if(q && !`${o.no} ${c?.name} ${c?.phone}`.toLowerCase().includes(q)) return false;
     if(f === 'open') return o.status !== 'cancelled' && st !== 'Delivered'; if(f === 'urgent') return o.urgent || activeG(o).some(g => g.urgent); if(f === 'late') return activeG(o).some(g => gLive(g) && ((g.deliveryDate && g.deliveryDate < today) || sc.G[g.id]?.late)); if(f === 'ready') return st.includes('eady'); if(f === 'delivered') return st === 'Delivered'; return true; })
-    .sort(by(o => o.created, -1));
-  return head + `<div class="card">${L.length ? `<table class="stack"><thead><tr><th>Order</th><th>Customer</th><th>Garments</th><th>Booked</th><th>Next delivery</th>${can('prices') ? '<th class="n">Total</th><th class="n">Balance</th>' : ''}<th>Status</th></tr></thead><tbody>${L.map(o => { const gs = activeG(o), T = orderTotals(o), [sl, sc2] = orderState(o), nx = gs.filter(gLive).map(g => g.deliveryDate).sort()[0];
+    .sort(by(o => { const x = orderTrack(o); return (x.open ? '0' : '1') + (x.commit || '9999'); }));
+  return head + `<div class="card">${L.length ? `<table class="stack"><thead><tr><th>Order</th><th>Customer</th><th>Garments</th><th>Booked</th><th>Committed delivery ↑</th>${can('prices') ? '<th class="n">Total</th><th class="n">Balance</th>' : ''}<th>Status</th></tr></thead><tbody>${L.map(o => { const gs = activeG(o), T = orderTotals(o), [sl, sc2] = orderState(o), nx = gs.filter(gLive).map(g => g.deliveryDate).sort()[0];
     return `<tr class="click" onclick="go('order-${o.id}')"><td><b>${h(o.no)}</b> ${o.urgent ? '<span class="chip urgent">URGENT</span>' : ''}</td><td>${h(cust(o.customerId)?.name)}</td><td>${gs.map(g => `${h(g.title)} ${gChip(g)}`).join('<br>')}</td><td>${fmtD(o.created)}</td><td>${nx ? dateChip(nx) : '—'}</td>${can('prices') ? `<td class="n">${inr(T.total)}</td><td class="n">${T.bal > 0.5 ? inr(T.bal) : '<span class="chip c-ok">Paid</span>'}</td>` : ''}<td><span class="chip ${sc2}">${sl}</span></td></tr>`; }).join('')}</tbody></table>` : '<div class="empty">No orders match.</div>'}</div>`;
 }};
 
@@ -209,10 +209,10 @@ function draftBlock(d, i, c){
         <label style="margin-top:8px">Fitting preferences for this article</label><textarea rows="2" data-p="${P}.fit">${h(d.fit)}</textarea>
         <label style="margin-top:8px">Special instructions</label><input data-p="${P}.instructions" value="${v(d.instructions)}" placeholder="Shown highlighted on job card">
       </div>
-      <div><h3>Design file</h3>
+      <div><h3>Design — sketch, cloth photos & references</h3>
         <div class="row ac">${dz ? `<div class="dimg" style="width:70px;height:54px;aspect-ratio:auto;border-radius:8px;flex-shrink:0" data-media="${h(dzCover(dz))}">✦</div><div><b>${h(dz.name)}</b> <span class="muted">${h(dz.code)} · ${h(dz.style || '')}</span></div>` : '<span class="muted">No catalogue design</span>'}<span class="sp"></span><button class="sm" onclick="pickDesignDraft(${i})">${dz ? 'Change' : 'Choose from catalogue'}</button>${dz ? `<button class="sm ghost danger" onclick="EDIT.garments[${i}].designId='';softRender()">✕</button>` : ''}</div>
-        <div class="row ac" style="margin-top:8px"><label class="btn sm" style="margin:0;color:var(--ink)">⬆ Add fabric photo / sketch / reference<input type="file" accept="image/*" multiple style="display:none" onchange="draftFiles(${i},this)"></label><span class="muted" style="font-size:12px">${d.files.length} file${d.files.length === 1 ? '' : 's'}</span></div>
-        ${d.files.length ? `<div class="thumbs" style="margin-top:6px">${d.files.map((f, k) => `<div class="thumb" data-media="${h(f.id)}"><span class="cap">${h(f.kind)}</span><button class="tbtn" onclick="EDIT.garments[${i}].files.splice(${k},1);softRender()">✕</button></div>`).join('')}</div>` : ''}
+        <div class="row ac" style="margin-top:8px"><button class="sm pri" onclick="sketchDraft(${i})">✏ Draw design sketch</button><select id="dk_${i}" style="width:auto">${FILE_KINDS.filter(([k]) => k !== 'photo').map(([k, l]) => opt(k, l, d.files.length ? 'reference' : 'fabric')).join('')}</select><label class="btn sm" style="margin:0;color:var(--ink)">⬆ Upload photo<input type="file" accept="image/*" multiple style="display:none" onchange="draftFiles(${i},this)"></label><span class="muted" style="font-size:12px">${d.files.length} file${d.files.length === 1 ? '' : 's'}</span></div>
+        ${d.files.length ? `<div class="thumbs" style="margin-top:6px">${d.files.map((f, k) => `<div class="thumb" data-media="${h(f.id)}" title="${h(f.caption || '')}"><span class="cap">${h(kindName(f.kind))}</span><button class="tedit" title="Draw over this image" onclick="sketchDraft(${i},'${h(f.id)}')">✏</button><button class="tbtn" onclick="EDIT.garments[${i}].files.splice(${k},1);softRender()">✕</button></div>`).join('')}</div>` : '<div class="hint">Sketch the design on a front/back stencil, or upload the designer\'s paper sketch, cloth and reference photos. They stay with this article everywhere.</div>'}
         <label class="inline" style="margin-top:8px"><input type="checkbox" data-p="${P}.designApproved" ${d.designApproved ? 'checked' : ''}> Customer has approved this design</label>
       </div>
     </div>
@@ -227,8 +227,8 @@ const dzCover = d => d.cover || d.samples[0] || d.sketches?.[0] || d.renders[0] 
 async function draftFiles(i, inp){
   const kinds = ['fabric', 'sketch', 'embroidery', 'reference'];
   const ids = await uploadImages(inp.files, 1400); inp.value = '';
-  const d = EDIT.garments[i]; ids.forEach((id, k) => d.files.push({id, kind: d.files.length === 0 && k === 0 ? 'fabric' : 'reference', caption: ''}));
-  softRender(); if(ids.length) toast(`${ids.length} image${ids.length > 1 ? 's' : ''} added — set the type on the garment's Design tab after saving`, 'ok');
+  const d = EDIT.garments[i], kind = document.getElementById('dk_' + i)?.value || 'reference'; ids.forEach(id => d.files.push({id, kind, caption: ''}));
+  softRender(); if(ids.length) toast(`${ids.length} ${kindName(kind).toLowerCase()}${ids.length > 1 ? 's' : ''} added to article ${i + 1}`, 'ok');
 }
 function autoAssignDraft(i){ const d = EDIT.garments[i]; let n = 0; d.steps.forEach(s => { if(isOut(s) || s.workerId || s.status !== 'pending' || stage(s.stageId).kind === 'trial') return; const c = coll('workers').filter(z => z.active !== false && (z.skills || []).includes(s.stageId)).sort(by(z => sched().end[z.id] || 0)); if(c[0]){ s.workerId = c[0].id; n++; } }); softRender(); toast(n ? `Assigned ${n} step(s) to the least-loaded skilled workers` : 'Nothing to assign', 'ok'); }
 function pickDesignDraft(i){
@@ -297,7 +297,7 @@ async function saveOrder(){
         const before = clone(p); p.values = clone(d.meas); p.unit = d.unit || 'in'; p.specs = clone(d.specs); p.fitNotes = d.fit; p.updated = nowISO();
         p.versions.push({at: nowISO(), by: meName(), unit: d.unit || 'in', values: clone(d.meas), specs: clone(d.specs), fitNotes: d.fit, note: 'Updated for ' + o.no + '/' + idx}); logChange(p, 'Measurements updated for ' + o.no + '/' + idx, before, clone(p));
       }
-      const files = d.files.map(f => ({id: f.id, kind: f.kind, caption: ''})), dz = design(d.designId);
+      const files = d.files.map(f => ({id: f.id, kind: f.kind, caption: f.caption || ''})), dz = design(d.designId);
       if(dz && !files.length) dzFiles(dz).forEach(f => files.push(f));
       const g = {id: uid('g'), orderId: o.id, customerId: o.customerId, idx, no: o.no + '/' + idx, tplId: d.tplId, title: d.title || t.name, qty: num(d.qty) || 1, profileId: p.id, memberId: d.memberId, unit: d.unit || 'in', meas: clone(d.meas), specs: clone(d.specs), style: d.style, fit: d.fit, urgent: !!d.urgent, instructions: d.instructions, fabricSource: d.fabricSource, deliveryDate: d.deliveryDate || o.deliveryDate, targets: {},
         components: d.components.map(c => ({...c, issued: 0})), steps: d.steps.map(s => ({...s})), design: {catalogId: d.designId, versions: (files.length || dz) ? [{v: 1, at: nowISO(), by: meName(), note: 'At booking', files, fields: {pattern: dz ? dz.name : '', placement: '', lining: '', trims: '', colours: '', notes: ''}, approved: !!d.designApproved, approvedAt: d.designApproved ? nowISO() : '', approvedBy: d.designApproved ? meName() : ''}] : [], approvedV: d.designApproved ? 1 : 0},

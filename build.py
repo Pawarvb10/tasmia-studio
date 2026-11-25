@@ -1,7 +1,7 @@
 import os
 ROOT=os.path.dirname(os.path.abspath(__file__))
 src=os.path.join(ROOT,'src')
-order=['core.js','meas.js','seed.js','logic.js','ui_shell.js','ui_orders.js','ui_garment.js','ui_ops.js','ui_crm.js','ui_admin.js','ui_studio.js','pdfdocs.js']
+order=['core.js','meas.js','seed.js','logic.js','ui_shell.js','ui_orders.js','ui_garment.js','ui_ops.js','ui_crm.js','ui_admin.js','ui_studio.js','sketch.js','ui_tracker.js','pdfdocs.js']
 js='\n'.join(open(os.path.join(src,f)).read() for f in order)
 css=open(os.path.join(src,'app.css')).read()
 html=f'''<!DOCTYPE html>
