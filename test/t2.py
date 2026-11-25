@@ -1,0 +1,111 @@
+import asyncio, json, base64
+from playwright.async_api import async_playwright
+F='file://'+__import__('os').path.abspath(__import__('os').path.join(__import__('os').path.dirname(__file__),'..','index.html'))+''
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+    ctx=await b.new_context(viewport={'width':1440,'height':1000}); pg=await ctx.new_page(); errs=[]
+    pg.on('pageerror',lambda e:errs.append('PAGEERR '+str(e)))
+    pg.on('console',lambda m:errs.append('CONSOLE '+m.text) if m.type=='error' else None)
+    await pg.goto(F); await pg.wait_for_timeout(600)
+    await pg.click('text=Load demo studio'); await pg.wait_for_timeout(500)
+    await pg.click('.utile >> nth=0'); await pg.fill('#pin','1111'); await pg.click('text=Sign in'); await pg.wait_for_timeout(1000)
+    await pg.evaluate("window.__pdfs=[]; openPDF=async(doc,name)=>{doc.footer('x'); const bl=doc.build(); const buf=new Uint8Array(await bl.arrayBuffer()); let s=''; for(const c of buf) s+=String.fromCharCode(c); window.__pdfs.push([name,btoa(s)]);}; void 0")
+    # ---- new order through the UI
+    await pg.click('.qa >> text=+ New order'); await pg.wait_for_timeout(500)
+    await pg.select_option('[data-p="customerId"]','__new'); await pg.wait_for_timeout(300)
+    await pg.fill('[data-p="_nc.name"]','Sana Kapoor'); await pg.fill('[data-p="_nc.phone"]','9876500000')
+    await pg.fill('[data-p="garments.0.style"]','Sweetheart neck, puff sleeves, dori back')
+    await pg.fill('[data-p="garments.0.meas.blouse_02"]','34')
+    await pg.select_option('#addTpl','t_suit_w'); await pg.click('text=+ Add article'); await pg.wait_for_timeout(400)
+    await pg.select_option('[data-p="garments.1.fabricSource"]','customer'); await pg.wait_for_timeout(300)
+    await pg.fill('[data-p="garments.1.style"]','Anarkali, full sleeves')
+    await pg.check('[data-p="urgent"]'); await pg.wait_for_timeout(200)
+    await pg.fill('[data-p="advance"]','5000')
+    print('OSUM', (await pg.inner_text('#osum')).replace('\n',' '))
+    print('GSUM', (await pg.inner_text('#gsum-0')).replace('\n',' '))
+    await pg.screenshot(path='neworder.png', full_page=True)
+    await pg.click('#saveOrderBtn'); await pg.wait_for_timeout(1200)
+    print('URL', pg.url, 'compose', await pg.is_visible('#modal.on'))
+    if await pg.is_visible('#modal.on'): await pg.click('#mbox >> text=Close')
+    r=await pg.evaluate("(()=>{const o=coll('orders').find(o=>cust(o.customerId)?.name==='Sana Kapoor');const gs=garmentsOf(o.id);return {no:o.no,urgent:o.urgent,pay:o.payments.map(p=>p.receiptNo+':'+p.amount),gs:gs.map(g=>[g.no,g.fabricSource,g.components.filter(c=>c.source==='customer').map(c=>c.name),g.profileId,g.deliveryDate]),cm:coll('custMaterials').filter(m=>m.orderId===o.id).length,profs:coll('profiles').filter(p=>p.customerId===o.customerId).length}})()")
+    print('NEWORDER', json.dumps(r))
+    await pg.screenshot(path='order.png', full_page=True)
+    # ---- Priya blouse: finish stitching & finishing, book trial, record trial w/ alteration, QC, deliver
+    gid=await pg.evaluate("coll('garments').find(g=>g.no==='TD-1002/1').id")
+    await pg.evaluate(f"(()=>{{const g=gar('{gid}');[2,3].forEach(i=>{{const s=g.steps[i]; if(s.status!=='in_progress'){{s.status='in_progress';s.startedAt=nowISO();}} }}); save();}})()")
+    await pg.goto(F+'#garment-'+gid); await pg.wait_for_timeout(400)
+    for i in [2,3]:
+      sid=await pg.evaluate(f"gar('{gid}').steps[{i}].id"); await pg.evaluate(f"doneStep('{gid}','{sid}')"); await pg.wait_for_timeout(200)
+    tsid=await pg.evaluate(f"gar('{gid}').steps[4].id")
+    await pg.evaluate(f"bookTrial('{gid}','{tsid}')"); await pg.wait_for_timeout(300)
+    await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(400)
+    if await pg.is_visible('#ask.on'): await pg.click('#askNo')
+    tid=await pg.evaluate(f"gar('{gid}').trials[0].id")
+    await pg.evaluate(f"recordTrial('{gid}','{tid}')"); await pg.wait_for_timeout(300)
+    await pg.fill('[data-p="notes"]','Slightly loose at bust'); await pg.fill('[data-p="alts.0.area"]','Bust'); await pg.fill('[data-p="alts.0.instruction"]','Take in 0.5 inch'); await pg.fill('[data-p="alts.0.charge"]','300')
+    await pg.screenshot(path='trial.png')
+    await pg.click('#mbox >> text=Save outcome'); await pg.wait_for_timeout(400)
+    st=await pg.evaluate(f"gar('{gid}').steps.map(s=>[s.stageId,s.label,s.status,s.seq])"); print('AFTER TRIAL', st)
+    alt=await pg.evaluate(f"gar('{gid}').steps.find(s=>s.stageId==='alter').id"); await pg.evaluate(f"startStep('{gid}','{alt}',true)"); await pg.evaluate(f"doneStep('{gid}','{alt}')"); await pg.wait_for_timeout(200)
+    # first QC step (seq 6) is before alteration? do QC on the pending qc
+    await pg.evaluate(f"doQC('{gid}')"); await pg.wait_for_timeout(300)
+    if await pg.is_visible('#ask.on'): await pg.click('#askYes'); await pg.wait_for_timeout(300)
+    await pg.click('text=Mark all pass'); await pg.click('#mbox >> text=Save QC result'); await pg.wait_for_timeout(300)
+    print('STATUS', await pg.evaluate(f"[gStatus(gar('{gid}')), gar('{gid}').steps.filter(s=>s.stageId==='qc').map(s=>s.status)]"))
+    if await pg.evaluate(f"gStatus(gar('{gid}'))") != 'ready':
+      await pg.evaluate(f"doQC('{gid}')"); await pg.wait_for_timeout(300)
+      if await pg.is_visible('#ask.on'): await pg.click('#askYes'); await pg.wait_for_timeout(300)
+      await pg.click('text=Mark all pass'); await pg.click('#mbox >> text=Save QC result'); await pg.wait_for_timeout(300)
+      print('STATUS2', await pg.evaluate(f"gStatus(gar('{gid}'))"))
+    for k in ['pressed','packed']: await pg.evaluate(f"deliveryStep('{gid}','{k}')")
+    await pg.evaluate(f"deliveryStep('{gid}','notified')"); await pg.wait_for_timeout(300)
+    if await pg.is_visible('#modal.on'): await pg.click('#mbox >> text=Close')
+    await pg.evaluate(f"deliveryStep('{gid}','delivered')"); await pg.wait_for_timeout(300)
+    await pg.fill('#p2f input[name=collected]','2000'); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(600)
+    if await pg.is_visible('#ask.on'): await pg.click('#askYes'); await pg.wait_for_timeout(400)
+    if await pg.is_visible('#modal.on'):
+      await pg.click('#mbox >> text=Generate'); await pg.wait_for_timeout(600)
+    print('DELIVERED', await pg.evaluate(f"[gStatus(gar('{gid}')), gar('{gid}').invoiceId && inv(gar('{gid}').invoiceId).no, orderTotals(ord(gar('{gid}').orderId))]"))
+    if await pg.is_visible('#modal.on'): await pg.click('#mbox >> text=Close')
+    # ---- send back, handwork, repeat, design version
+    g1=await pg.evaluate("coll('garments').find(g=>g.no==='TD-1001/1').id")
+    await pg.evaluate(f"sendBack('{g1}')"); await pg.wait_for_timeout(200); await pg.fill('#p2f textarea[name=reason]','Cut panel 1 inch short'); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(300)
+    await pg.evaluate(f"addHandwork('{g1}')"); await pg.wait_for_timeout(200); await pg.fill('#p2f input[name=label]','Extra cutdana on sleeves'); await pg.fill('#p2f input[name=charge]','1500'); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(300)
+    await pg.evaluate(f"newDesignVersion('{g1}')"); await pg.wait_for_timeout(200); await pg.fill('#p2f input[name=note]','Customer wants border wider'); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(300)
+    await pg.evaluate("UI.gtabNext='design'"); await pg.goto(F+'#garment-'+g1); await pg.wait_for_timeout(400)
+    await pg.set_input_files('input[onchange^="uploadVersionFiles"]', ['/home/claude/test/f00.png','/home/claude/test/f01.png']); await pg.wait_for_timeout(1500)
+    await pg.screenshot(path='design.png', full_page=True)
+    print('G1', await pg.evaluate(f"(()=>{{const g=gar('{g1}');return [g.design.versions.length,g.design.approvedV,g.design.versions.at(-1).files.length,g.steps.length,g.extras.length,g.history.length, sched().G[g.id].ready, allAlerts().filter(a=>a.gid===g.id).map(a=>a.title)]}})()"))
+    await pg.evaluate("UI.gtabNext='overview'"); await pg.goto(F+'#garment-'+g1); await pg.wait_for_timeout(400); await pg.screenshot(path='garment.png', full_page=True)
+    # ---- vendor handover (new order garment 2 kurta set dupatta dyeing is optional) use Neha's? test on new order garment kurta-set dye step
+    g2=await pg.evaluate("coll('garments').find(g=>g.title.includes('Kurta Set')||g.tplId==='t_suit_w'&&cust(g.customerId)?.name==='Sana Kapoor').id")
+    dsid=await pg.evaluate(f"gar('{g2}').steps.find(s=>s.stageId==='dye').id")
+    await pg.evaluate(f"startStep('{g2}','{dsid}',true)"); await pg.wait_for_timeout(200)
+    await pg.select_option('#p2f select[name=vendorId]','v_shree'); await pg.fill('#p2f input[name=advance]','200'); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(300)
+    print('VENDOR', await pg.evaluate(f"(()=>{{const s=gar('{g2}').steps.find(s=>s.stageId==='dye');return [s.status,s.vendorId,s.expectedReturn,vendorAccount('v_shree').adv, coll('custMaterials').filter(m=>m.garmentId==='{g2}').map(m=>m.status)]}})()"))
+    # ---- leave + reassign
+    await pg.evaluate("addLeave('w_suresh')"); await pg.wait_for_timeout(200); await pg.fill('#p2f input[name=to]', await pg.evaluate("iso(addDays(new Date(),5))")); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(400)
+    if await pg.is_visible('#ask.on'):
+      await pg.click('#askYes'); await pg.wait_for_timeout(400); await pg.click('#mbox >> text=Reassign'); await pg.wait_for_timeout(300)
+    print('LEAVE', await pg.evaluate("[worker('w_suresh').leaves.length, workerCap(worker('w_suresh'),1), workerStats()['w_suresh'].tasks.length]"))
+    # ---- inventory issue
+    ix=await pg.evaluate(f"gar('{g1}').components.findIndex(c=>c.itemId)")
+    await pg.evaluate(f"issueDialog('{g1}',{ix})"); await pg.wait_for_timeout(200); await pg.fill('#p2f input[name=qty]','1'); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(300)
+    # ---- payment + receipt + PDFs
+    oid=await pg.evaluate("coll('orders').find(o=>cust(o.customerId)?.name==='Sana Kapoor').id")
+    await pg.evaluate(f"recordPayment('{oid}')"); await pg.wait_for_timeout(200); await pg.fill('#p2f input[name=amount]','1000'); await pg.click('#p2f button[type=submit]'); await pg.wait_for_timeout(500)
+    if await pg.is_visible('#ask.on'): await pg.click('#askYes'); await pg.wait_for_timeout(1000)
+    await pg.goto(F+'#reports'); await pg.wait_for_timeout(400)
+    iid=await pg.evaluate("coll('invoices')[0].id"); pid=await pg.evaluate("coll('profiles')[0].id")
+    for call in [f"invoicePDF('{iid}')", f"measSheetPDF('{g1}')", f"jobCardPDF('{g1}')", f"artisanPDF('{g1}')", "reportPDF()", f"profilePDF('{pid}')"]:
+      await pg.evaluate(call); await pg.wait_for_timeout(800)
+    pdfs=await pg.evaluate("window.__pdfs")
+    import pypdf, io
+    for name,b64 in pdfs:
+      data=base64.b64decode(b64); open('pdf_'+name.replace('/','_'),'wb').write(data)
+      rd=pypdf.PdfReader(io.BytesIO(data)); txt=rd.pages[0].extract_text()
+      print('PDF', name, len(data)//1024,'KB pages',len(rd.pages), '| has shop:', 'Tasmia' in txt, '| imgs', sum(len(pg2.images) for pg2 in rd.pages))
+    print('ERRS', errs[:15])
+    await b.close()
+asyncio.run(main())
