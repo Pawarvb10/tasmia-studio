@@ -92,7 +92,7 @@ function newProfile(cid, mid){
 }
 function editProfile(pid){ UI.x = clone(prof(pid)); UI.x.unit = UI.x.unit || 'in'; openProfileEditor(); }
 function openProfileEditor(){
-  const P = UI.x, t = tpl(P.tplId);
+  const P = UI.x, t = tpl(P.tplId); window._mmRerender = openProfileEditor;
   openModal(`<div class="mbar"><b>${P._new ? 'New measurements' : 'Update measurements'} · ${h(memLabel(P.customerId, P.memberId, true) || P.person || '')}</b><span class="muted">${h(t.name)} · ${h(P.label)}</span><span class="sp"></span><button onclick="closeModal()">Cancel</button><button class="pri" onclick="saveProfile()">Save${P._new ? '' : ' as new version'}</button></div>${profileForm(t, P)}${P._new ? '' : '<label style="margin-top:8px">Reason for change</label><input id="profWhy" placeholder="e.g. Re-measured before wedding season">'}`, true);
 }
 function saveProfile(){
@@ -102,7 +102,7 @@ function saveProfile(){
   UI.x = null; closeModal(); save(); render(); toast('Measurements saved — earlier versions kept', 'ok');
 }
 function viewProfile(pid){
-  const P = prof(pid), t = tpl(P.tplId);
+  const P = prof(pid), t = tpl(P.tplId); window._mmRerender = () => viewProfile(pid);
   openModal(`<div class="mbar"><b>${h(memLabel(P.customerId, P.memberId, true) || P.person || '')} · ${h(t.name)}</b><span class="muted">${h(P.label)} · ${UNITS[P.unit || 'in']}</span><span class="sp"></span><button onclick="closeModal();editProfile('${pid}')">✎ Update</button><button onclick="profilePDF('${pid}')">⬇ Sheet PDF</button><button onclick="closeModal()">Close</button></div>
   ${measView(t, P.values, P.unit)}
   ${(t.specs || []).length ? `<h3 style="margin-top:12px">Specifications</h3><div>${t.specs.map(sp => `<span class="chip c-mut">${h(sp.label)}: ${h(P.specs?.[sp.k] || '—')}</span>`).join(' ')}</div>` : ''}${P.fitNotes ? `<h3 style="margin-top:12px">Fit notes</h3><div style="white-space:pre-wrap">${h(P.fitNotes)}</div>` : ''}

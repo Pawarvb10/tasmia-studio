@@ -332,3 +332,25 @@ button:disabled{opacity:.45;cursor:not-allowed}
 @media (max-width:900px){.trhead{display:none}.trsum{grid-template-columns:72px 1fr auto 18px;grid-template-areas:"d o s c" "d n u c" "d j j c";row-gap:2px;column-gap:10px}
   .trsum .trd{grid-area:d}.trsum .tro{grid-area:o}.trsum .trc{grid-area:n;min-width:0}.trsum .trj{grid-area:j;white-space:normal;font-size:12.5px;color:var(--muted)}.trsum .tru{grid-area:u;text-align:right}.trsum .trs{grid-area:s;text-align:right}.trsum .trchev{grid-area:c}
   .trarts thead{display:none}.trarts tr{display:block;position:relative;padding:8px 0 8px 52px;border-bottom:1px solid var(--line)}.trarts td{display:block;border:0;padding:0}.trarts td:nth-child(1){position:absolute;left:0;top:8px}.trarts td.n{text-align:left}.trarts td:nth-child(4)::before{content:'Qty ';color:var(--muted)}.trarts td:nth-child(n+6){display:inline-block;margin:4px 6px 0 0;font-size:12px}.trjd{max-width:none}}
+
+/* measurement chart (list) mode — same columns as the printed sheet */
+.mcharts{display:grid;gap:14px;max-width:720px}
+.mcharts.two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr));max-width:none}
+.mchart{width:100%;border-collapse:collapse;font-size:13.5px;background:#fff}
+.mchart caption{text-align:left;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;font-size:12.5px;padding:0 0 6px}
+.mchart th{background:var(--accent-soft);color:var(--accent-2);font-size:12px;text-align:left;padding:6px 8px;border:1px solid var(--line)}
+.mchart td{border:1px solid var(--line);padding:3px 8px;vertical-align:middle}
+.mchart .c{text-align:center;width:52px}
+.mchart td:last-child{width:46%}
+.mchart tr.done td:first-child{background:var(--ok);color:#fff;font-weight:700}
+.mchart .mins{margin:0}
+.mchart .min input{padding:4px 26px 4px 6px;font-size:14.5px}
+.mchart .min{flex-direction:row;align-items:center;gap:4px}
+.mchart .min .msub{min-width:auto}
+.mdg summary{cursor:pointer;list-style:none}
+.mdg summary::-webkit-details-marker{display:none}
+.mdg summary::after{content:' ⓘ';color:var(--muted);font-size:11px}
+.mdg[open] summary{font-weight:600}
+.mdgimg{width:150px;margin:6px 0;background:#faf6f3;border-radius:8px}
+.mdgimg svg{display:block;width:100%;height:auto}
+@media (max-width:600px){.mcharts.two{grid-template-columns:1fr}.mchart{table-layout:fixed;font-size:13px}.mchart th{font-size:11px;white-space:normal}.mchart .c{width:34px;padding:3px 2px}.mchart td:last-child,.mchart th:last-child{width:46%}.mchart td{padding:3px 5px}.mchart .mins{flex-direction:column;gap:3px}.mchart .min .msub{font-size:9.5px;width:44px}}

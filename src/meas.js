@@ -208,16 +208,34 @@ function convertVals(vals, from, to){ const o = {}; Object.entries(vals || {}).f
 const unitLabel = u => u === 'cm' ? 'cm' : 'in';
 
 /* ---------------- measurement entry grid (diagram cards in PDF order) ---------------- */
+/* entry mode: 'chart' = list with the same columns as the printed sheet (fast), 'diagram' = one card per measurement */
+function measMode(){ try { return localStorage.getItem('td_mmode') || 'chart'; } catch(e){ return 'chart'; } }
+function setMeasMode(m){
+  try { localStorage.setItem('td_mmode', m); } catch(e){}
+  const inModal = document.getElementById('modal')?.classList.contains('on') && document.querySelector('#mbox .mmode');
+  if(inModal && window._mmRerender){ const sc = document.getElementById('mbox').scrollTop; window._mmRerender(); const mb = document.getElementById('mbox'); if(mb) mb.scrollTop = sc; }
+  else if(route().v === 'neworder') softRender(); else render();
+}
+const modeToggle = () => { const m = measMode(); return `<span class="muted" style="font-size:12.5px">View</span><div class="useg mmode" role="group" aria-label="Measurement entry style"><button type="button" class="${m === 'chart' ? 'on' : ''}" onclick="setMeasMode('chart')" title="List with the same columns as the printed sheet">☰ Chart</button><button type="button" class="${m === 'diagram' ? 'on' : ''}" onclick="setMeasMode('diagram')" title="One diagram per measurement">◫ Diagrams</button></div>`; };
 function measGrid(t, vals, path, root, unit, onUnit){
   vals = vals || {};
   if(!(t.charts || []).length) return plainMeasGrid(t, vals, path, root);
-  const filled = chartFields(t.charts).filter(f => String(vals[f.k] ?? '').trim()).length, tot = chartFields(t.charts).length;
-  return `<div class="row ac" style="margin:4px 0 8px"><span class="muted mcount" style="font-size:12.5px"><b>${filled}</b> of ${tot} entered · in the same order as the ${t.charts.map(c => CHARTS[c].name).join(' + ')} sheet</span><span class="sp"></span>
-    <span class="muted" style="font-size:12.5px">Unit</span><div class="useg" role="group" aria-label="Measurement unit">${['in', 'cm'].map(u => `<button type="button" class="${unit === u ? 'on' : ''}" onclick="${onUnit}('${u}')">${UNITS[u]}</button>`).join('')}</div></div>
-  ${t.charts.map(ch => { const C2 = CHARTS[ch]; return `<div class="msec-t">${h(C2.name)} measurements</div><div class="mcards">${C2.items.map(it => { const [no, label, o] = it, dn = o.dual ? dualNames(label) : null;
+  const filled = chartFields(t.charts).filter(f => String(vals[f.k] ?? '').trim()).length, tot = chartFields(t.charts).length, mode = measMode();
+  const bar = `<div class="row ac" style="margin:4px 0 8px;gap:8px"><span class="muted mcount" style="font-size:12.5px"><b>${filled}</b> of ${tot} entered · same order as the ${t.charts.map(c => CHARTS[c].name).join(' + ')} sheet</span><span class="sp"></span>${modeToggle()}
+    <span class="muted" style="font-size:12.5px">Unit</span><div class="useg" role="group" aria-label="Measurement unit">${['in', 'cm'].map(u => `<button type="button" class="${unit === u ? 'on' : ''}" onclick="${onUnit}('${u}')">${UNITS[u]}</button>`).join('')}</div></div>`;
+  const inp = (k, label, sub) => `<label class="min">${sub ? `<span class="msub">${h(sub)}</span>` : ''}<span class="mi"><input data-root="${root}" data-p="${path}.${k}" value="${v(vals[k])}" inputmode="decimal" autocomplete="off" aria-label="${h(label)} ${h(sub)}"><span class="mu">${unitLabel(unit)}</span></span></label>`;
+  if(mode === 'chart') return bar + `<div class="mcharts ${t.charts.length > 1 ? 'two' : ''}">${t.charts.map(ch => chartTable(ch, vals, unit, it => { const [no, label, o] = it, dn = o.dual ? dualNames(label) : null; return `<div class="mins">${o.dual ? inp(mKey(ch, no, 'L'), label, dn[0]) + inp(mKey(ch, no, 'R'), label, dn[1]) : inp(mKey(ch, no), label, '')}</div>`; })).join('')}</div>`;
+  return bar + t.charts.map(ch => { const C2 = CHARTS[ch]; return `<div class="msec-t">${h(C2.name)} measurements</div><div class="mcards">${C2.items.map(it => { const [no, label, o] = it, dn = o.dual ? dualNames(label) : null;
     const ins = o.dual ? [[mKey(ch, no, 'L'), dn[0]], [mKey(ch, no, 'R'), dn[1]]] : [[mKey(ch, no), '']];
     const done = ins.every(([k]) => String(vals[k] ?? '').trim());
-    return `<div class="mcard ${done ? 'done' : ''}"><div class="mhead"><span class="mno">${no}</span><span class="mlab">${h(label)}</span></div><div class="msvg">${measSVG(ch, it)}</div><div class="mins">${ins.map(([k, sub]) => `<label class="min">${sub ? `<span class="msub">${h(sub)}</span>` : ''}<span class="mi"><input data-root="${root}" data-p="${path}.${k}" value="${v(vals[k])}" inputmode="decimal" autocomplete="off" aria-label="${h(label)} ${h(sub)}"><span class="mu">${unitLabel(unit)}</span></span></label>`).join('')}</div></div>`; }).join('')}</div>`; }).join('')}`;
+    return `<div class="mcard ${done ? 'done' : ''}"><div class="mhead"><span class="mno">${no}</span><span class="mlab">${h(label)}</span></div><div class="msvg">${measSVG(ch, it)}</div><div class="mins">${ins.map(([k, sub]) => inp(k, label, sub)).join('')}</div></div>`; }).join('')}</div>`; }).join('');
+}
+// the printed sheet as a table: Sr.No. | Measurement Names | Measurement Value [unit]; cell(it) renders the value cell
+function chartTable(ch, vals, unit, cell){
+  const C2 = CHARTS[ch];
+  return `<table class="mchart"><caption>Measurement chart [${h(C2.name.toUpperCase())}]</caption><thead><tr><th class="c">Sr.No.</th><th>Measurement Names</th><th>Measurement Value [${UNITS[unit || 'in'] === 'cm' ? 'cm' : 'Inches'}]</th></tr></thead><tbody>
+  ${C2.items.map(it => { const [no, label, o] = it, keys = o.dual ? [mKey(ch, no, 'L'), mKey(ch, no, 'R')] : [mKey(ch, no)], done = keys.every(k => String(vals[k] ?? '').trim());
+    return `<tr class="mrow ${done ? 'done' : ''}"><td class="c">${no}</td><td><details class="mdg"><summary title="Show where to measure">${h(label)}</summary><div class="mdgimg">${measSVG(ch, it)}</div></details></td><td>${cell(it)}</td></tr>`; }).join('')}</tbody></table>`;
 }
 function plainMeasGrid(t, vals, path, root){
   const secs = [...new Set(t.fields.map(f => f.sec))];
@@ -226,7 +244,9 @@ function plainMeasGrid(t, vals, path, root){
 function measView(t, vals, unit){
   vals = vals || {};
   if(!(t.charts || []).length){ const secs = [...new Set(t.fields.map(f => f.sec))]; return secs.map(s => `<div class="msec-t">${h(s)}</div><div class="mgrid">${t.fields.filter(f => f.sec === s).map(f => `<div><span class="muted" style="font-size:12px">${h(f.label)}</span><div><b>${h(vals[f.k] || '—')}</b></div></div>`).join('')}</div>`).join('') + legacyVals(t, vals); }
-  return legacyVals(t, vals) + t.charts.map(ch => { const C2 = CHARTS[ch]; return `<div class="msec-t">${h(C2.name)} · ${UNITS[unit || 'in']}</div><div class="mcards">${C2.items.map(it => { const [no, label, o] = it, val = o.dual ? [vals[mKey(ch, no, 'L')], vals[mKey(ch, no, 'R')]] : [vals[mKey(ch, no)]], any = val.some(x => String(x ?? '').trim());
+  const fmtV = it => { const [no, label, o] = it, ch = it._ch; return o.dual ? `${dualNames(label)[0]} <b>${h(vals[mKey(ch, no, 'L')] || '—')}</b> · ${dualNames(label)[1]} <b>${h(vals[mKey(ch, no, 'R')] || '—')}</b>` : `<b>${h(vals[mKey(ch, no)] || '—')}</b>`; };
+  if(measMode() === 'chart') return legacyVals(t, vals) + `<div class="row ac" style="margin:0 0 8px;gap:8px"><span class="sp"></span>${modeToggle()}</div><div class="mcharts ${t.charts.length > 1 ? 'two' : ''}">${t.charts.map(ch => chartTable(ch, vals, unit, it => fmtV(Object.assign(it.slice(), {_ch: ch})))).join('')}</div>`;
+  return legacyVals(t, vals) + `<div class="row ac" style="margin:0 0 8px;gap:8px"><span class="sp"></span>${modeToggle()}</div>` + t.charts.map(ch => { const C2 = CHARTS[ch]; return `<div class="msec-t">${h(C2.name)} · ${UNITS[unit || 'in']}</div><div class="mcards">${C2.items.map(it => { const [no, label, o] = it, val = o.dual ? [vals[mKey(ch, no, 'L')], vals[mKey(ch, no, 'R')]] : [vals[mKey(ch, no)]], any = val.some(x => String(x ?? '').trim());
     return `<div class="mcard view ${any ? 'done' : 'empty'}" title="${h(label)}"><div class="mhead"><span class="mno">${no}</span><span class="mlab">${h(label)}</span></div><div class="msvg">${measSVG(ch, it)}</div><div class="mval">${o.dual ? `L <b>${h(val[0] || '—')}</b> · ${dualNames(label)[1] === 'Round' ? 'R' : 'BR'} <b>${h(val[1] || '—')}</b>` : `<b>${h(val[0] || '—')}</b>`} ${any ? unitLabel(unit) : ''}</div></div>`; }).join('')}</div>`; }).join('');
 }
 function measRows(t, vals){ // [no, name, value] for PDFs, in sheet order
@@ -268,6 +288,6 @@ function articleOptions(sel){
 }
 function legacyVals(t, vals){ const keys = new Set((t.fields || []).map(f => f.k)), L = Object.entries(vals || {}).filter(([k, x]) => !keys.has(k) && String(x ?? '').trim()); return L.length ? `<details style="margin-top:8px"><summary class="muted">Earlier measurements in the old format (${L.length})</summary><div>${L.map(([k, x]) => `<span class="chip c-mut">${h(k.replace(/_/g, ' '))}: ${h(x)}</span>`).join(' ')}</div></details>` : ''; }
 /* fast entry: Enter jumps to the next measurement; card turns green when filled */
-document.addEventListener('keydown', e => { if(e.key !== 'Enter' || !e.target.closest || !e.target.closest('.min')) return; e.preventDefault(); const all = [...document.querySelectorAll('.min input')], i = all.indexOf(e.target); if(all[i + 1]){ all[i + 1].focus(); all[i + 1].select(); all[i + 1].closest('.mcard')?.scrollIntoView({block: 'nearest', behavior: 'smooth'}); } });
-document.addEventListener('input', e => { const card = e.target.closest && e.target.closest('.mcard'); if(!card) return; card.classList.toggle('done', [...card.querySelectorAll('input')].every(x => x.value.trim()));
-  const box = card.parentElement.closest('.mblock, .mbox, .card'), cnt = box && box.querySelector('.mcount b'); if(cnt) cnt.textContent = [...box.querySelectorAll('.min input')].filter(x => x.value.trim()).length; });
+document.addEventListener('keydown', e => { if(e.key !== 'Enter' || !e.target.closest || !e.target.closest('.min')) return; e.preventDefault(); const all = [...document.querySelectorAll('.min input')], i = all.indexOf(e.target); if(all[i + 1]){ all[i + 1].focus(); all[i + 1].select(); all[i + 1].closest('.mcard, .mrow')?.scrollIntoView({block: 'nearest', behavior: 'smooth'}); } });
+document.addEventListener('input', e => { const card = e.target.closest && e.target.closest('.mcard, .mrow'); if(!card) return; card.classList.toggle('done', [...card.querySelectorAll('input')].every(x => x.value.trim()));
+  const box = card.parentElement.closest('.mblock, #mbox, .card'), cnt = box && box.querySelector('.mcount b'); if(cnt) cnt.textContent = [...box.querySelectorAll('.min input')].filter(x => x.value.trim()).length; });

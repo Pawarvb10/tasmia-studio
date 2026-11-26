@@ -11,6 +11,7 @@ No install and no server. Open `index.html` in Chrome or Edge, choose **Load dem
 - **Family CRM.** Each customer is the primary member and can have family members, each with a relation, gender, date of birth (age is worked out automatically), phone and notes. Measurements are stored per member, per article, with version history.
 - **Invoices in the studio's format.** The order-details table has the studio's charge columns: Basic Stitching, Patterning, Work, Hangings, Fabric, Dyeing, Alterations, Saree Fall & Picco, Tassels, Steam Press, Drywash and Others. Each column shows the charge for one piece, then quantity and total. Each article has a line describing the work. The summary deducts the discount and referral discount to give the amount payable, followed by payment details, notes (delivery date, trial date, special instructions) and a thank-you footer. The PDF is landscape A4.
 
+- **Measurements as a chart or diagrams.** Enter measurements in a list with the same columns and order as the printed sheets (Sr.No. | Measurement Names | Measurement Value), which is the default and fastest, or switch to one diagram per measurement. Each name has an ⓘ that shows its diagram. The choice is remembered per device.
 - **Design sketch pad per article.** Draw the design on a front/back stencil (blouse, kurti/top, bottom/lehenga, men's or a blank page) with a finger, stylus or mouse, or draw over a photo of a paper sketch. Cloth photos and references are uploaded with a type. Sketches, specs, measurements and instructions always stay together with the article.
 - **Delivery tracker.** All orders in ascending order of committed delivery date, one line each: date (with overdue days), order no., customer and mobile, article summary in diary style (e.g. "3 BL + 1 Top + 1 S F&P"), units and status. Ready orders are highlighted in green. Tap an order to expand it like an accordion and see its articles, job descriptions, stages and due dates. Search by order, name, mobile or family member; filter by date range. Print or export the list.
 
@@ -39,7 +40,7 @@ The app is built from the files in `src/` into the root `index.html`:
 python3 build.py
 ```
 
-`test/t1.py` … `test/t7.py` are Playwright smoke tests: logic, full workflow and PDFs, central-database mode (with `mock.js`), mobile layout, the measurement and family flow, invoices, and the sketch pad and delivery tracker. Screenshots and PDFs are written to `test/out/`. `test/t2.py` also uploads two local images; change those paths before running it.
+`test/t1.py` … `test/t8.py` are Playwright smoke tests: logic, full workflow and PDFs, central-database mode (with `mock.js`), mobile layout, the measurement and family flow, invoices, and the sketch pad and delivery tracker. Screenshots and PDFs are written to `test/out/`. `test/t2.py` also uploads two local images; change those paths before running it.
 
 The earlier v1/v2 proof of concept lives in [boutique-order-to-billing](https://github.com/Pawarvb10/boutique-order-to-billing).
 

@@ -1,0 +1,43 @@
+import asyncio, base64
+from playwright.async_api import async_playwright
+F='file://'+__import__('os').path.abspath(__import__('os').path.join(__import__('os').path.dirname(__file__),'..','index.html')); S=__import__('os').path.join(__import__('os').path.dirname(__import__('os').path.abspath(__file__)),'out','')
+__import__('os').makedirs(S,exist_ok=True)
+async def main():
+  async with async_playwright() as p:
+    b=await p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+    ctx=await b.new_context(viewport={'width':1440,'height':1000}); pg=await ctx.new_page(); errs=[]
+    pg.on('pageerror',lambda e:errs.append('PAGEERR '+str(e)))
+    await pg.goto(F); await pg.wait_for_timeout(600)
+    await pg.click('text=Load demo studio'); await pg.wait_for_timeout(500)
+    await pg.click('.utile >> nth=0'); await pg.fill('#pin','1111'); await pg.click('text=Sign in'); await pg.wait_for_timeout(1000)
+    await pg.evaluate("newOrder('c_neha')"); await pg.wait_for_timeout(600)
+    # article 1 blouse default for neha -> new set; chart mode default
+    print('mode', await pg.evaluate("measMode()"), await pg.evaluate("document.querySelectorAll('.mchart').length"))
+    await pg.fill('[data-p="garments.0.meas.blouse_01"]','34'); await pg.press('[data-p="garments.0.meas.blouse_01"]','Enter')
+    print('focus', await pg.evaluate("document.activeElement.dataset.p")); await pg.keyboard.type('33'); await pg.keyboard.press('Enter'); await pg.keyboard.type('29')
+    print('count', await pg.evaluate("document.querySelector('.mcount b').textContent"), await pg.evaluate("document.querySelectorAll('.mrow.done').length"))
+    await pg.click('.mdg summary >> nth=3'); await pg.wait_for_timeout(200)
+    await pg.evaluate("document.querySelector('.mblock').scrollIntoView()"); await pg.screenshot(path=S+'mc_blouse.png')
+    # switch to suit (top+bottom)
+    await pg.select_option('[data-p="garments.0.tplId"]','t_suit_w'); await pg.wait_for_timeout(500)
+    await pg.evaluate("document.querySelector('.mblock').scrollIntoView()"); await pg.screenshot(path=S+'mc_suit.png')
+    await pg.fill('[data-p="garments.0.meas.top_20L"]','6'); await pg.fill('[data-p="garments.0.meas.top_20R"]','11')
+    await pg.click('.mmode button:has-text("Diagrams")'); await pg.wait_for_timeout(400)
+    print('after toggle', await pg.evaluate("[measMode(), document.querySelectorAll('.mcard').length, EDIT.garments[0].meas.top_20L]"))
+    await pg.click('.mmode button:has-text("Chart")'); await pg.wait_for_timeout(300)
+    # profile view modal chart & toggle
+    await pg.evaluate("closeModal(); viewProfile('p_anika_t')"); await pg.wait_for_timeout(400)
+    await pg.screenshot(path=S+'mc_view.png')
+    await pg.click('#mbox .mmode button:has-text("Diagrams")'); await pg.wait_for_timeout(300)
+    print('modal toggled', await pg.evaluate("[document.querySelectorAll('#mbox .mcard').length, document.getElementById('modal').classList.contains('on')]"))
+    await pg.evaluate("closeModal(); editProfile('p_vikram_k')"); await pg.wait_for_timeout(300)
+    await pg.click('#mbox .mmode button:has-text("Chart")'); await pg.wait_for_timeout(300)
+    print('edit modal', await pg.evaluate("[document.querySelectorAll('#mbox .mchart').length, UI.x.values.mens_01]"))
+    await pg.screenshot(path=S+'mc_mens.png')
+    m=await b.new_context(viewport={'width':390,'height':844}); mp=await m.new_page(); mp.on('pageerror',lambda e:errs.append('M '+str(e)))
+    await mp.goto(F); await mp.wait_for_timeout(500); await mp.click('text=Load demo studio'); await mp.wait_for_timeout(400)
+    await mp.click('.utile >> nth=0'); await mp.fill('#pin','1111'); await mp.click('text=Sign in'); await mp.wait_for_timeout(800)
+    await mp.evaluate("newOrder('c_priya')"); await mp.wait_for_timeout(500); await mp.evaluate("document.querySelector('.mblock').scrollIntoView()")
+    print('m sw', await mp.evaluate("document.documentElement.scrollWidth")); await mp.screenshot(path=S+'mc_mobile.png')
+    print('ERRS',errs)
+asyncio.run(main())
